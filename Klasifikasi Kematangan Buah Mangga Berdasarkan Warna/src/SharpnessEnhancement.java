@@ -1,0 +1,34 @@
+
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.Size;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/**
+ *
+ * @author Michael
+ */
+public class SharpnessEnhancement {
+    private Mat src;
+    private Mat dst;
+    
+    public SharpnessEnhancement(){
+        src = Imgcodecs.imread("D:/Campus/Semester 12/Skripsi/Skripsi Sekarang/Program Skripsi/Klasifikasi Kematangan Buah Mangga Berdasarkan Warna/Gambar_Mangga_Gedong_Gincu.jpg");
+        dst = new Mat(src.rows(), src.cols(), src.type());
+    }
+    
+    public void filtering(){
+        Imgproc.GaussianBlur(src, dst, new Size(0, 0), 10);
+        Core.addWeighted(src, 1.5, dst, -0.5, 0, dst);
+        
+        //Write Output Image
+        Imgcodecs.imwrite("D:/Campus/Semester 12/Skripsi/Skripsi Sekarang/Program Skripsi/Klasifikasi Kematangan Buah Berdasarkan Warna/Hasil_Gambar_Mangga_Gedong_Gincu.jpg", dst);
+    }
+}

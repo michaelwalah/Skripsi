@@ -24,18 +24,20 @@ import org.opencv.imgproc.Imgproc;
 
 public class Main {
 
+    //Cek hasil dari canny edge detection, kalau hasilnya adalah matriks dengan nilai dari buah yang telah diambil
+    //gunakan Masking untuk misahin kemudian clustering dengan hasil dari masking tersebut.
+    //!!! Ingat, masking dilakukan apabila warna dari putih pada objek gambar yang diambil atau warna hitam dari objek gambar yang diambil
     public static void main(String[] args) throws Exception{
         // load the OpenCV native library
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         
-        //Find the Image Location
-        String locationImage = "D:/Campus/Semester 12/Skripsi/Skripsi Sekarang/Program Skripsi/Klasifikasi Kematangan Buah Mangga Berdasarkan Warna/Gambar_Mangga_Gedong_Gincu.jpg";
+        SharpnessEnhancement contrast = new SharpnessEnhancement();
+        contrast.filtering();
+        Clustering cluster = new Clustering();
+        cluster.doClustering();
         
-        //Read the Image
-        Mat image = Imgcodecs.imread(locationImage);
-        
-        //Keisengan yang hakiki
-        //Background Convert to Color Black
+//        //Keisengan yang hakiki
+//        //Background Convert to Color Black
 //        for(int i = 0; i < image.width(); i++){
 //            for(int j=0; j < image.height(); j++){
 //                double[] data = image.get(j, i); //Stores element in an array
@@ -54,59 +56,6 @@ public class Main {
 //            }
 //        }
         
-        //Create Java Frame for the Image
-        JFrame frame = new JFrame("Original Image");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
-        ImagePanel saltedImagePanel = new ImagePanel();
-        frame.setContentPane(saltedImagePanel);
-        
-        //Convert Mat to Java's BufferedImage
-        MatToBufImg converter = new MatToBufImg();
-        
-        //Create New Matrix to Convert BGR to CIE LAB
-        Mat image_lab = new Mat();
-        //Convert BGR Image to LAB Image
-        Imgproc.cvtColor(image, image_lab, Imgproc.COLOR_BGR2Lab);
-        
-        //CLUSTERING
-        //Reshape to 2D Matrix
-        Mat samples = image_lab.reshape(1, image_lab.cols() * image_lab.rows());
-        
-        Mat samples32f = new Mat();
-        samples.convertTo(samples32f, CvType.CV_32F, 1.0 / 128.0);
-        TermCriteria term = new TermCriteria(TermCriteria.COUNT,100,1);
-        
-        //Create Matrix to Put Labels
-        Mat labels = new Mat();
-        //Create Matrix to Put Centers (Centroids)
-        Mat centers = new Mat();
-        //Running K-Means Clustering Algorithm
-        Core.kmeans(samples32f, 10, labels, term, 1, Core.KMEANS_PP_CENTERS, centers);
-        //Print All Labels
-//        System.out.print("labels: "+labels.dump());
-        //Print All Centers
-        System.out.println("centers: "+centers.dump());
-        
-        System.out.println("image " + image.channels() + " channels " + image.cols() + " columns and " + image.rows() + " rows");
-        //Output : Image contain 3 channels 601 columns and 488 rows
-        
-        //salt(image, 10001); //Put 10001 'salt' dots on the image (Try Salting Effect)
-        
-        converter.setMatrix(image, ".jpg");
-        BufferedImage img = converter.getBufferedImage();
-        //add the JPG image to JFrame
-        saltedImagePanel.setImage(img);
-        //saltedImagePanel.repaint(); //ask the system to repaint the (updated GUI)
-        //saltedImagePanel.setBackground(Color.black);
-        
-        frame.setSize(img.getWidth(), img.getHeight());
-        
-        //frame.add(new JLabel(icn_img));
-        frame.setLocationRelativeTo(null); //center GUI
-        //frame.revalidate();
-        frame.setVisible(true);
-        
         // Schedule a job for the event dispatch thread:
         // creating and showing this application's GUI.
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -115,7 +64,6 @@ public class Main {
                 new CannyEdgeDetection();
             }
         });
-        
     }
     
 //    public static int randInt(int min, int max){
