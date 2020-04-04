@@ -24,6 +24,7 @@ import javax.swing.event.ChangeListener;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.highgui.HighGui;
@@ -44,7 +45,7 @@ public class CannyEdgeDetection {
     private JLabel imgLabel;
     
     public CannyEdgeDetection() {
-        String imagePath = "D:/Campus/Semester 12/Skripsi/Skripsi Sekarang/Program Skripsi/Klasifikasi Kematangan Buah Mangga Berdasarkan Warna/Gambar_Mangga_Gedong_Gincu.jpg";
+        String imagePath = "D:/Campus/Semester 12/Skripsi/Skripsi Sekarang/Program Skripsi/Klasifikasi Kematangan Buah Mangga Berdasarkan Warna/mangga-foto-rev2-dv/ManggaMATANG/kondisi-ideal/mangga-matang-ideal2.jpg";
         src = Imgcodecs.imread(imagePath);
         if (src.empty()) {
             System.out.println("Empty image: " + imagePath);
@@ -96,11 +97,27 @@ public class CannyEdgeDetection {
     }
     
     private void update() {
-        Imgproc.GaussianBlur(src, srcBlur, BLUR_SIZE, 10);
+        Mat greyImage = new Mat();
+        Imgproc.cvtColor(src, greyImage, Imgproc.COLOR_BGR2GRAY);
+        Imgproc.GaussianBlur(greyImage, srcBlur, BLUR_SIZE, 10);
         Imgproc.Canny(srcBlur, detectedEdges, lowThresh, lowThresh * RATIO, KERNEL_SIZE, false);
-        dst = new Mat(src.size(), CvType.CV_8UC3, Scalar.all(0));
+        //dst = new Mat(src.size(), CvType.CV_8UC3, Scalar.all(0));
+        //dst = dst.setTo(new Scalar(0));
+        dst = new Mat();
+        double h = src.size().height;
+        double w = src.size().width;
+        System.out.println(h+","+w);
         src.copyTo(dst, detectedEdges);
-        Image img = HighGui.toBufferedImage(dst);
+        Mat mask = Mat.zeros((int)h+2, (int)w+2, CvType.CV_8U);
+        // dilate to fill gaps
+        Imgproc.dilate(dst, dst, new Mat(), new Point(-1, -1), 1);
+        Imgproc.floodFill(dst,mask,new Point(0,0),new Scalar(128));
+        //Mat invert_ff_img = dst.clone();
+        Mat out = dst.clone();
+        //Core.bitwise_not(dst, invert_ff_img);
+        //Core.bitwise_or(invert_ff_img, src, out);
+        //Imgproc.erode(dst, dst, new Mat(), new Point(-1, -1), 1);
+        Image img = HighGui.toBufferedImage(out);
         imgLabel.setIcon(new ImageIcon(img));
         frame.repaint();
     }

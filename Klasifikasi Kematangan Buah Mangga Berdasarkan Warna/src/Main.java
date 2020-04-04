@@ -31,8 +31,8 @@ public class Main {
         // load the OpenCV native library
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         
-        SharpnessEnhancement contrast = new SharpnessEnhancement();
-        contrast.filtering();
+        //SharpnessEnhancement contrast = new SharpnessEnhancement();
+        //contrast.filtering();
         Clustering cluster = new Clustering();
         cluster.doClustering();
         

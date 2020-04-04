@@ -29,7 +29,7 @@ public class Clustering {
     private JFrame frame;
     
     public Clustering(){
-        String imagePath = "D:/Campus/Semester 12/Skripsi/Skripsi Sekarang/Program Skripsi/Klasifikasi Kematangan Buah Mangga Berdasarkan Warna/Gambar_Mangga_Gedong_Gincu.jpg";
+        String imagePath = "D:/Campus/Semester 12/Skripsi/Skripsi Sekarang/Program Skripsi/Klasifikasi Kematangan Buah Mangga Berdasarkan Warna/mangga-foto-rev2-dv/ManggaMATANG/kondisi-ideal/mangga-matang-ideal2.jpg";
         src = Imgcodecs.imread(imagePath);
         if (src.empty()) {
             System.out.println("Empty image: " + imagePath);
