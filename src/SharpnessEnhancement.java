@@ -20,7 +20,7 @@ public class SharpnessEnhancement {
     private Mat dst;
     
     public SharpnessEnhancement(){
-        src = Imgcodecs.imread("D:/Campus/Semester 12/Skripsi/Skripsi Sekarang/Program Skripsi/Klasifikasi Kematangan Buah Mangga Berdasarkan Warna/Gambar_Mangga_Gedong_Gincu_3.jpg");
+        src = Imgcodecs.imread("Gambar_Mangga_Gedong_Gincu_3.jpg");
         dst = new Mat(src.rows(), src.cols(), src.type());
     }
     
@@ -29,6 +29,6 @@ public class SharpnessEnhancement {
         Core.addWeighted(src, 1.5, dst, -0.5, 0, dst);
         
         //Write Output Image
-        Imgcodecs.imwrite("D:/Campus/Semester 12/Skripsi/Skripsi Sekarang/Program Skripsi/Klasifikasi Kematangan Buah Berdasarkan Warna/Hasil_Gambar_Mangga_Gedong_Gincu_6.jpg", dst);
+        Imgcodecs.imwrite("Hasil_Gambar_Mangga_Gedong_Gincu_6.jpg", dst);
     }
 }
