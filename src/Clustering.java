@@ -29,7 +29,7 @@ public class Clustering {
     private JFrame frame;
     
     public Clustering(){
-        String imagePath = "mangga-foto-rev2-dv/ManggaMATANG/kondisi-ideal/mangga-matang-ideal2.jpg";
+        String imagePath = "mangga-foto-rev2-dv/ManggaMentah/kondisi-kurang/mangga-mentah-kurang10.jpg";
         src = Imgcodecs.imread(imagePath);
         if (src.empty()) {
             System.out.println("Empty image: " + imagePath);
@@ -58,7 +58,7 @@ public class Clustering {
         samples = image_lab.reshape(1, image_lab.cols() * image_lab.rows());
         
         Mat samples32f = new Mat();
-        samples.convertTo(samples32f, CvType.CV_32F, 1.0 / 128.0);
+        samples.convertTo(samples32f, CvType.CV_32F, -127.0 / 128.0);
         TermCriteria term = new TermCriteria(TermCriteria.COUNT,100,1);
         
         //Create Matrix to Put Labels

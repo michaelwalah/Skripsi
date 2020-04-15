@@ -33,8 +33,8 @@ public class Main {
         
         //SharpnessEnhancement contrast = new SharpnessEnhancement();
         //contrast.filtering();
-        Clustering cluster = new Clustering();
-        cluster.doClustering();
+//        Clustering cluster = new Clustering();
+//        cluster.doClustering();
         
 //        //Keisengan yang hakiki
 //        //Background Convert to Color Black

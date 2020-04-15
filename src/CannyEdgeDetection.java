@@ -32,6 +32,7 @@ import org.opencv.core.MatOfInt;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
+import org.opencv.core.TermCriteria;
 import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -47,7 +48,11 @@ public class CannyEdgeDetection {
     private Mat detectedEdges = new Mat();
     private Mat dst = new Mat();
     private Mat image_lab;
+    private Mat samples;
+    private Mat labels;
+    private Mat centers;
     private JFrame frame;
+    private JFrame originalFrame;
     private JLabel imgLabel;
     private Random rng = new Random(12345);
 
@@ -59,18 +64,24 @@ public class CannyEdgeDetection {
             System.out.println("Empty image: " + imagePath);
             System.exit(0);
         }
-
         // Create and set up the window.
-        frame = new JFrame("Image Using Canny Edge Detection");
+        originalFrame = new JFrame("Original Image");
+        frame = new JFrame("Processing Image");
+        originalFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         // Set up the content pane.
+        Image img_2 = HighGui.toBufferedImage(src);
         Image img = HighGui.toBufferedImage(src);
+        addComponentsToPane(originalFrame.getContentPane(), img_2);
         addComponentsToPane(frame.getContentPane(), img);
         // Use the content pane's default BorderLayout. No need for
         // setLayout(new BorderLayout());
         // Display the window.
+        originalFrame.pack();
         frame.pack();
+        originalFrame.setLocationRelativeTo(null);
         frame.setLocationRelativeTo(null);
+        originalFrame.setVisible(true);
         frame.setVisible(true);
         update();
     }
@@ -172,20 +183,74 @@ public class CannyEdgeDetection {
         image_lab = new Mat();
         
         Imgproc.cvtColor(out_2, image_lab, Imgproc.COLOR_BGR2Lab);
-        
         //ambil pixel bukan hitam
+        
         List<double[]> temp = new ArrayList<>();
         for(int i=0; i < image_lab.rows(); i++){
             for(int j=0; j< image_lab.cols(); j++){
-                double[] tes = image_lab.get(i, j);
-                if(tes[0]!=0.0 && tes[1]!=128.0 && tes[2]!=128.0){
-                    temp.add(tes);
+                double[] value = image_lab.get(i, j);
+                if(value[0]!=0.0 && value[1]!=128.0 && value[2]!=128.0){
+                    temp.add(value);
                 }
             }
         }
         
-        double[][] result = new double[temp.size()][];
-        result = temp.toArray(result);
+        //Convert from ArrayList to Matrix
+        Mat filtered_pixel = new Mat(1,temp.size(),CvType.CV_8UC3);
+        for (int i = 0; i < temp.size(); i++) {
+            filtered_pixel.put(0, i, temp.get(i));
+        }
+            
+        //Reshape to 2D matrix
+        samples = filtered_pixel.reshape(1, filtered_pixel.cols() * filtered_pixel.rows());
+        
+        Mat samples32f = new Mat();
+        samples.convertTo(samples32f, CvType.CV_32F, -127.0 / 128.0);
+        TermCriteria term = new TermCriteria(TermCriteria.COUNT,100,1);
+        
+        //Create Matrix to Put Labels
+        labels = new Mat();
+        //Create Matrix to Put Centers (Centroids)
+        centers = new Mat();
+        //Running K-Means Clustering Algorithm
+        Core.kmeans(samples32f, 10, labels, term, 1, Core.KMEANS_PP_CENTERS, centers);
+        
+        //Print All Centers
+        System.out.println("Centers: "+centers.dump());
+        
+        //Get Each L, a, and b Value On One Cluster
+        double[][] labClusterValue = new double[centers.rows()][4];    
+        for (int i = 0; i < samples.rows(); i++) {
+            labClusterValue[(int) (labels.get(i,0))[0]][0] = labClusterValue[(int) (labels.get(i,0))[0]][0] + (samples.get(i,0))[0];
+            labClusterValue[(int) (labels.get(i,0))[0]][1] = labClusterValue[(int) (labels.get(i,0))[0]][1] + (samples.get(i,1))[0];
+            labClusterValue[(int) (labels.get(i,0))[0]][2] = labClusterValue[(int) (labels.get(i,0))[0]][2] + (samples.get(i,2))[0];
+            labClusterValue[(int) (labels.get(i,0))[0]][3] = labClusterValue[(int) (labels.get(i,0))[0]][3]+1;
+        }
+        
+        System.out.println("==============================================");
+        System.out.println("Lab Value and Total Element:");
+        
+        for (int i = 0; i < labClusterValue.length; i++) {
+            for (int j = 0; j < labClusterValue[0].length; j++) {
+                System.out.print(labClusterValue[i][j]+" ");
+            }
+            System.out.println("");
+        }
+        
+        //Calculate Intra Cluster Distance
+        System.out.println("==============================================");
+        System.out.println("Intra Cluster Distance Value");
+        double[] intraClusterDistanceValue = new double[centers.rows()];
+        for (int i = 0; i < centers.rows(); i++) {
+            double[] labCenterValueL = centers.get(i,0);
+            double[] labCenterValueA = centers.get(i,1);
+            double[] labCenterValueB = centers.get(i,2);
+            intraClusterDistanceValue[i] = Math.sqrt(Math.pow(labClusterValue[i][0]-labCenterValueL[0], 2)+
+                    Math.pow(labClusterValue[i][1]-labCenterValueA[0], 2)+
+                    Math.pow(labClusterValue[i][2]-labCenterValueB[0], 2));
+            System.out.println(intraClusterDistanceValue[i] + " ");
+        }
+        
         //done
         Image img = HighGui.toBufferedImage(out_2);
         imgLabel.setIcon(new ImageIcon(img));
