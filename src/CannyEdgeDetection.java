@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
+import static java.util.stream.Collectors.toMap;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -269,7 +271,7 @@ public class CannyEdgeDetection {
 //            System.out.println("");
 //        }
 
-        System.out.println(samples.rows());
+//        System.out.println(samples.rows());
         double[][] intraTotalValue = new double[centers.rows()][2]; //[x][0] simppan total 'jarak euclidean' dari seluruh anggota cluster dengan centroid, x[0][1] simpan total anggota
         for (int i = 0; i < samples.rows(); i++) {
             double[] labCenterValueL = centers.get((int) (labels.get(i, 0))[0], 0);
@@ -284,8 +286,10 @@ public class CannyEdgeDetection {
             intraTotalValue[(int) (labels.get(i, 0))[0]][0] = intraTotalValue[(int) (labels.get(i, 0))[0]][0] + distEuclid;
             intraTotalValue[(int) (labels.get(i, 0))[0]][1] = intraTotalValue[(int) (labels.get(i, 0))[0]][1] + 1;
         }
+        System.out.println(intraTotalValue[0][0]);
+        System.out.println(intraTotalValue[0][1]);
         
-        System.out.println("check intra cluster value");
+        System.out.println("Check intra cluster value");
         double[] intraClusterDistanceValue = new double[centers.rows()];
         int count_idx = 0;
         for(double[] tes: intraTotalValue){
@@ -306,16 +310,19 @@ public class CannyEdgeDetection {
             score = intraClusterDistance2 + labClusterValue2;
             dominantColor.put(i, score);
         }
-        Map<Integer, Double> treeMap = sortByValue(dominantColor);
+        Map<Integer, Double> sorted = dominantColor.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .collect(Collectors.toMap(Map.Entry::getKey, 
+                        Map.Entry::getValue, (e1,e2) -> e1, LinkedHashMap:: new));
         //Print sortedmap
-        for (Map.Entry<Integer, Double> en : treeMap.entrySet()) {
-            System.out.println("Key = " + en.getKey() + ", Value = " + en.getValue());
+        for (Map.Entry<Integer, Double> en : sorted.entrySet()) {
+            System.out.println("Key (Cluster) = " + en.getKey() + ", Value = " + en.getValue());
         }
         
         //Get 5 Dominant Color
         double[][] vector_image = new double[5][3];
         count_idx = 0;
-        for (Map.Entry<Integer, Double> en : treeMap.entrySet()) {
+        for (Map.Entry<Integer, Double> en : sorted.entrySet()) {
 //            System.out.println(en.getKey());
             if(count_idx==5) break;
             vector_image[count_idx][0] = (centers.get(en.getKey(),0))[0];
@@ -335,31 +342,10 @@ public class CannyEdgeDetection {
             System.out.println("============================");
             count_idx++;
         }
-
+        
         //done
         Image img = HighGui.toBufferedImage(out_2);
         imgLabel.setIcon(new ImageIcon(img));
         frame.repaint();
-    }
-
-    public static HashMap<Integer,Double> sortByValue(Map<Integer, Double> map) {
-        
-        //Create a list from elements of HashMap
-        List<Map.Entry<Integer, Double>> list = new LinkedList<Map.Entry<Integer, Double>>(map.entrySet());
-        
-        //Sort the list
-        Collections.sort(list, new Comparator<Map.Entry<Integer, Double>>() {
-            @Override
-            public int compare(Map.Entry<Integer, Double> o1, Map.Entry<Integer, Double> o2) {
-                return (o1.getValue()).compareTo(o2.getValue());
-            }
-        });
-        
-        //put data from sorted list to hashmap
-        HashMap<Integer, Double> temp = new LinkedHashMap<Integer, Double>();
-        for (Map.Entry<Integer, Double> entry : list) {
-            temp.put(entry.getKey(), entry.getValue());
-        }
-        return temp;
     }
 }
