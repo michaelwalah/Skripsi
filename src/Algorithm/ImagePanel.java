@@ -1,3 +1,5 @@
+package Algorithm;
+
 
 import java.awt.image.BufferedImage;
 import java.io.*;
