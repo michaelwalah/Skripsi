@@ -60,7 +60,6 @@ public class ImageProcessing {
     private int count_idx;
     //Variables for Matrix
     private Mat src; //Matrix for Image Source
-    private Mat srcBlur = new Mat(); //Matrix for Blurring the Image Source
     private Mat detectedEdges = new Mat(); //Matrix for get Edge Detection Value
     private Mat dst; //Matrix for Destination Image in Canny Edge Detection
     private Mat drawing; //Matrix for Drawing Contours
@@ -82,12 +81,6 @@ public class ImageProcessing {
     private JFrame frame;
     private JFrame originalFrame;
     private JLabel imgLabel;
-    //Variable for Map (Mapping)
-    private Map<Integer, Double> dominantColor;
-    private Map<Integer, Double> sorted;
-    private Map<Integer, Double> en;
-    //Random number generator
-    private Random rng = new Random();
 
     public ImageProcessing() {
         dst = new Mat();
@@ -103,18 +96,17 @@ public class ImageProcessing {
         sliderPanel.setLayout(new BoxLayout(sliderPanel, BoxLayout.PAGE_AXIS));
 
         imgLabel = new JLabel(new ImageIcon(img));
-        System.out.println("test imgLabel"+imgLabel==null);
         pane.add(imgLabel, BorderLayout.CENTER);
     }
 
     public void doCannyEdgeDetection(int lowThresh, int lowThreshXRatio) {
-        dst = new Mat(); //reset objek dst
-        //pre processing
+        dst = new Mat(); //reset object
+        Mat srcBlur = new Mat();
+        //Pre Processing
         Mat greyImage = new Mat();
         Imgproc.cvtColor(src, greyImage, Imgproc.COLOR_BGR2GRAY);//convert gambar ke grayscale
         Imgproc.GaussianBlur(greyImage, srcBlur, BLUR_SIZE, 100);//apply gaussian blur
-        //Imgproc.Canny(srcBlur, detectedEdges, lowThresh, lowThresh * RATIO, KERNEL_SIZE, false); //apply canny edge detection
-        Imgproc.Canny(srcBlur, detectedEdges, lowThresh, lowThreshXRatio, KERNEL_SIZE, false);
+        Imgproc.Canny(srcBlur, detectedEdges, lowThresh, lowThreshXRatio, KERNEL_SIZE, false);//apply canny edge detection
     }
 
     public void doDilation() {
@@ -126,7 +118,7 @@ public class ImageProcessing {
         Mat hierarchy = new Mat();
         Imgproc.findContours(detectedEdges, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
-        //find largest hull
+        //Find Largest Hull
         double maxArea = 0.0;
         MatOfPoint biggestHull = new MatOfPoint();
         largestIndex = 0;
@@ -150,7 +142,8 @@ public class ImageProcessing {
         }
         hullList.add(biggestHull);
 
-        //draw contour
+        //Draw Contour
+        Random rng = new Random();
         drawing = Mat.zeros(detectedEdges.size(), CvType.CV_8UC3);
         color = new Scalar(rng.nextInt(256), rng.nextInt(256), rng.nextInt(256));
         Imgproc.drawContours(drawing, contours, largestIndex, color);
@@ -158,7 +151,7 @@ public class ImageProcessing {
     }
 
     public Mat doMasking() {
-        //create mask
+        //Create Mask
         double h = drawing.size().height;
         double w = drawing.size().width;
         src.copyTo(dst, drawing);
@@ -168,7 +161,7 @@ public class ImageProcessing {
         Imgproc.drawContours(drawing, contours, largestIndex, color);
         Imgproc.drawContours(drawing, hullList, 0, color);
 
-        //apply masking
+        //Apply Masking
         out = new Mat();
         Core.bitwise_and(src, drawing, out);
         out_2 = new Mat();
@@ -218,7 +211,6 @@ public class ImageProcessing {
 
         //Calculate Intra Cluster Distance
         System.out.println("==============================================");
-        System.out.println("Intra Cluster Distance Value");
 
         //Get Each L, a, and b Value On One Cluster
         intraTotalValue = new double[centers.rows()][2]; //[x][0] simppan total 'jarak euclidean' dari seluruh anggota cluster dengan centroid, x[0][1] simpan total anggota
@@ -232,10 +224,10 @@ public class ImageProcessing {
             intraTotalValue[(int) (labels.get(i, 0))[0]][0] = intraTotalValue[(int) (labels.get(i, 0))[0]][0] + distEuclid;
             intraTotalValue[(int) (labels.get(i, 0))[0]][1] = intraTotalValue[(int) (labels.get(i, 0))[0]][1] + 1;
         }
-        System.out.println(intraTotalValue[0][0]);
-        System.out.println(intraTotalValue[0][1]);
+//        System.out.println(intraTotalValue[0][0]);
+//        System.out.println(intraTotalValue[0][1]);
 
-        System.out.println("Check intra cluster value");
+        System.out.println("Intra Cluster Distance Value");
         intraClusterDistanceValue = new double[centers.rows()];
         count_idx = 0;
         for (double[] tes : intraTotalValue) {
@@ -246,7 +238,7 @@ public class ImageProcessing {
     }
 
     public double[][] findDominantColor() {
-        dominantColor = new HashMap<Integer, Double>();
+        Map<Integer, Double> dominantColor = new HashMap<Integer, Double>();
         //Find Dominant Color
         System.out.println("==============================================");
         System.out.println("Dominant Colors");
@@ -259,7 +251,7 @@ public class ImageProcessing {
             score = intraClusterDistance2 + labClusterValue2;
             dominantColor.put(i, score);
         }
-        sorted = dominantColor.entrySet().stream()
+        Map<Integer, Double> sorted = dominantColor.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .collect(Collectors.toMap(Map.Entry::getKey,
                         Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
@@ -350,6 +342,7 @@ public class ImageProcessing {
         }
         // Create and set up the window.
         if(type>0){
+            System.out.println("Data-Test:");
             originalFrame = new JFrame("Original Image");
             frame = new JFrame("Processing Image");
 
