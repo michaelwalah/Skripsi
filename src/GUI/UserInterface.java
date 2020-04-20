@@ -5,7 +5,7 @@
  */
 package GUI;
 
-import Algorithm.CannyEdgeDetection;
+import Algorithm.ImageProcessing;
 import java.io.File;
 import javafx.stage.FileChooser;
 import javax.swing.JFileChooser;
@@ -188,7 +188,7 @@ public class UserInterface extends javax.swing.JFrame {
                 javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new CannyEdgeDetection();
+                new ImageProcessing();
             }
         });
     }//GEN-LAST:event_predictButtonActionPerformed

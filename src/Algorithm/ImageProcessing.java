@@ -56,15 +56,13 @@ public class ImageProcessing {
     private static final int KERNEL_SIZE = 3;
     private static final Size BLUR_SIZE = new Size(3, 3);
     //Variable for integer value
-    private int lowThresh = 0;
-    private int lowThreshXRatio = 0;
     private int largestIndex;
     private int count_idx;
     //Variables for Matrix
     private Mat src; //Matrix for Image Source
     private Mat srcBlur = new Mat(); //Matrix for Blurring the Image Source
     private Mat detectedEdges = new Mat(); //Matrix for get Edge Detection Value
-    private Mat dst = new Mat(); //Matrix for Destination Image in Canny Edge Detection
+    private Mat dst; //Matrix for Destination Image in Canny Edge Detection
     private Mat drawing; //Matrix for Drawing Contours
     private Mat image_lab; //Matrix for Conversion Color
     private Mat samples; //Matrix for Reshape Image to 2D Matrix
@@ -77,8 +75,6 @@ public class ImageProcessing {
     //Variable for List Contains Matrix of Point
     private List<MatOfPoint> contours; //Using for find and draw the contours
     private List<MatOfPoint> hullList; //Using for find and draw the contours
-    private ArrayList<File> dt = new ArrayList<>(); //List that being used for load image data training
-    private ArrayList<String> al; //List that contains values of the image
     //Variable for Array
     private double[][] intraTotalValue; //Contains intra cluster distance total value
     private double[] intraClusterDistanceValue; //Contains intra cluster distance value per cluster
@@ -88,41 +84,13 @@ public class ImageProcessing {
     private JLabel imgLabel;
     //Variable for Map (Mapping)
     private Map<Integer, Double> dominantColor;
+    private Map<Integer, Double> sorted;
+    private Map<Integer, Double> en;
     //Random number generator
     private Random rng = new Random();
 
     public ImageProcessing() {
-        String imagePath = "data-train/ManggaMentah/mangga-mentah-kurang10.jpg";
-        src = Imgcodecs.imread(imagePath);
-
-        if (src.empty()) {
-            System.out.println("Empty image: " + imagePath);
-            System.exit(0);
-        }
-        // Create and set up the window.
-        originalFrame = new JFrame("Original Image");
-        frame = new JFrame("Processing Image");
-
-        originalFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        // Set up the content pane.
-        Image img_2 = HighGui.toBufferedImage(src);
-        Image img = HighGui.toBufferedImage(src);
-
-        addComponentsToPane(originalFrame.getContentPane(), img_2);
-        addComponentsToPane(frame.getContentPane(), img);
-        // Use the content pane's default BorderLayout. No need for
-        // setLayout(new BorderLayout());
-        // Display the window.
-        originalFrame.pack();
-        frame.pack();
-
-        originalFrame.setLocationRelativeTo(null);
-        frame.setLocationRelativeTo(null);
-
-        originalFrame.setVisible(true);
-        frame.setVisible(true);
-        update();
+        dst = new Mat();
     }
 
     private void addComponentsToPane(Container pane, Image img) {
@@ -133,20 +101,18 @@ public class ImageProcessing {
 
         JPanel sliderPanel = new JPanel();
         sliderPanel.setLayout(new BoxLayout(sliderPanel, BoxLayout.PAGE_AXIS));
-        
+
         imgLabel = new JLabel(new ImageIcon(img));
+        System.out.println("test imgLabel"+imgLabel==null);
         pane.add(imgLabel, BorderLayout.CENTER);
     }
 
-    public void doCannyEdgeDetection() {
+    public void doCannyEdgeDetection(int lowThresh, int lowThreshXRatio) {
         dst = new Mat(); //reset objek dst
         //pre processing
         Mat greyImage = new Mat();
         Imgproc.cvtColor(src, greyImage, Imgproc.COLOR_BGR2GRAY);//convert gambar ke grayscale
         Imgproc.GaussianBlur(greyImage, srcBlur, BLUR_SIZE, 100);//apply gaussian blur
-
-        lowThresh = 50;
-        lowThreshXRatio = 50;
         //Imgproc.Canny(srcBlur, detectedEdges, lowThresh, lowThresh * RATIO, KERNEL_SIZE, false); //apply canny edge detection
         Imgproc.Canny(srcBlur, detectedEdges, lowThresh, lowThreshXRatio, KERNEL_SIZE, false);
     }
@@ -237,7 +203,6 @@ public class ImageProcessing {
         samples = filtered_pixel.reshape(1, filtered_pixel.cols() * filtered_pixel.rows());
 
         Mat samples32f = new Mat();
-        //samples.convertTo(samples32f, CvType.CV_32F, -127.0 / 128.0);
         samples.convertTo(samples32f, CvType.CV_32F);
         TermCriteria term = new TermCriteria(TermCriteria.COUNT, 100, 1);
 
@@ -256,18 +221,14 @@ public class ImageProcessing {
         System.out.println("Intra Cluster Distance Value");
 
         //Get Each L, a, and b Value On One Cluster
-//        System.out.println(samples.rows());
         intraTotalValue = new double[centers.rows()][2]; //[x][0] simppan total 'jarak euclidean' dari seluruh anggota cluster dengan centroid, x[0][1] simpan total anggota
         for (int i = 0; i < samples.rows(); i++) {
             double[] labCenterValueL = centers.get((int) (labels.get(i, 0))[0], 0);
             double[] labCenterValueA = centers.get((int) (labels.get(i, 0))[0], 1);
             double[] labCenterValueB = centers.get((int) (labels.get(i, 0))[0], 2);
-//            System.out.println((samples.get(i,0))[0] +","+(samples.get(i,1))[0] +","+(samples.get(i,2))[0]);
-//            System.out.println(labCenterValueL[0] +","+labCenterValueA[0] +","+labCenterValueB[0]);
             double distEuclid = Math.sqrt(Math.pow((samples.get(i, 0))[0] - labCenterValueL[0], 2)
                     + Math.pow((samples.get(i, 1))[0] - labCenterValueA[0], 2)
                     + Math.pow((samples.get(i, 2))[0] - labCenterValueB[0], 2));
-//            System.out.println(distEuclid +","+(int) (labels.get(i, 0))[0]);
             intraTotalValue[(int) (labels.get(i, 0))[0]][0] = intraTotalValue[(int) (labels.get(i, 0))[0]][0] + distEuclid;
             intraTotalValue[(int) (labels.get(i, 0))[0]][1] = intraTotalValue[(int) (labels.get(i, 0))[0]][1] + 1;
         }
@@ -284,7 +245,7 @@ public class ImageProcessing {
         }
     }
 
-    public void findDominantColor() {
+    public double[][] findDominantColor() {
         dominantColor = new HashMap<Integer, Double>();
         //Find Dominant Color
         System.out.println("==============================================");
@@ -298,7 +259,7 @@ public class ImageProcessing {
             score = intraClusterDistance2 + labClusterValue2;
             dominantColor.put(i, score);
         }
-        Map<Integer, Double> sorted = dominantColor.entrySet().stream()
+        sorted = dominantColor.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .collect(Collectors.toMap(Map.Entry::getKey,
                         Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
@@ -306,12 +267,10 @@ public class ImageProcessing {
         for (Map.Entry<Integer, Double> en : sorted.entrySet()) {
             System.out.println("Key (Cluster) = " + en.getKey() + ", Value = " + en.getValue());
         }
-
         //Get 5 Dominant Color
         double[][] vector_image = new double[5][3];
         count_idx = 0;
         for (Map.Entry<Integer, Double> en : sorted.entrySet()) {
-//            System.out.println(en.getKey());
             if (count_idx == 5) {
                 break;
             }
@@ -320,7 +279,6 @@ public class ImageProcessing {
             vector_image[count_idx][2] = (centers.get(en.getKey(), 2))[0];
             count_idx++;
         }
-
         System.out.println("==============================================");
         //Debug and Print the 5 Vector Image
         count_idx = 0;
@@ -332,17 +290,17 @@ public class ImageProcessing {
             System.out.println("============================");
             count_idx++;
         }
+        return vector_image;
     }
 
     public ArrayList<String> loadDataTraining(File[] list) {
-        al = new ArrayList<>();
+        ArrayList<String> alDataTrain = new ArrayList<>();
         for (File x : list) {
             if (x.isDirectory()) {
                 if (x.getAbsolutePath().contains("ManggaMatang") || x.getAbsolutePath().contains("ManggaMentah")) {
-                    al.addAll(loadDataTraining(x.listFiles()));
+                    alDataTrain.addAll(loadDataTraining(x.listFiles()));
                 }
             } else {
-                dt.add(x);
                 String test = x.getAbsolutePath();
                 String str = "";
                 for (int i = 0; i < test.length(); i++) {
@@ -352,30 +310,116 @@ public class ImageProcessing {
                         str += test.charAt(i) + "";
                     }
                 }
-                al.add(str);
+                alDataTrain.add(str);
             }
         }
-        return al;
+        return alDataTrain;
     }
     
-//    public ArrayList<Double[][]> trainData(){
-//        for (int i = 0; i < al.size(); i++) {
+    public ArrayList<String> loadDataTest(File[] list){
+        ArrayList<String> alDataTest = new ArrayList<>();
+        for (File x : list) {
+            if (x.isDirectory()) {
+                if (x.getAbsolutePath().contains("Matang") || x.getAbsolutePath().contains("Mentah")) {
+                    alDataTest.addAll(loadDataTraining(x.listFiles()));
+                }
+            } else {
+                String test = x.getAbsolutePath();
+                String str = "";
+                for (int i = 0; i < test.length(); i++) {
+                    if (test.charAt(i) == '\\') {
+                        str += "/";
+                    } else {
+                        str += test.charAt(i) + "";
+                    }
+                }
+                alDataTest.add(str);
+            }
+        }
+        return alDataTest;
+    }
+
+    
+    public double[][] extractFeature(String pathTest,int type){
+        String imagePath = pathTest;
+        src = Imgcodecs.imread(imagePath);
+
+        if (src.empty()) {
+            System.out.println("Empty image: " + imagePath);
+            System.exit(0);
+        }
+        // Create and set up the window.
+        if(type>0){
+            originalFrame = new JFrame("Original Image");
+            frame = new JFrame("Processing Image");
+
+            originalFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            // Set up the content pane.
+            Image img_2 = HighGui.toBufferedImage(src);
+            Image img = HighGui.toBufferedImage(src);
+
+            addComponentsToPane(originalFrame.getContentPane(), img_2);
+            addComponentsToPane(frame.getContentPane(), img);
+            // Use the content pane's default BorderLayout. No need for
+            // setLayout(new BorderLayout());
+            // Display the window.
+            originalFrame.pack();
+            frame.pack();
+
+            originalFrame.setLocationRelativeTo(null);
+            frame.setLocationRelativeTo(null);
+
+            originalFrame.setVisible(true);
+            frame.setVisible(true);
+        }
+        
+        double [][] featureVector = update();
+        
+        //Display Square Color of Centroid (OPTIONAL, Uncommand to See the Result)
+//        for (int i = 0; i < featureVector.length; i++) {
+//            Scalar lab = new Scalar(featureVector[i]);
+//            Mat square = new Mat(50,50,16,lab);
+//            Mat converted = new Mat();
+//            Imgproc.cvtColor(square, converted, Imgproc.COLOR_Lab2BGR);
+//            
+//            String[] temp = pathTest.split("/");
+//            
+//            if(type==0){
+//                originalFrame = new JFrame("Square Image - Train Data:"+temp[temp.length-1]);
+//            } else originalFrame = new JFrame("Square Image - Test Data:"+temp[temp.length-1]);
+//            
+//            originalFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//            
+//            // Set up the content pane.
+//            Image img = HighGui.toBufferedImage(converted);
+//
+//            addComponentsToPane(originalFrame.getContentPane(), img);
+//            // Use the content pane's default BorderLayout. No need for
+//            // setLayout(new BorderLayout());
+//            // Display the window.
+//            originalFrame.pack();
+//            originalFrame.setLocationRelativeTo(null);
+//            originalFrame.setVisible(true);
 //            
 //        }
-//        return null;
-//    }
+        return featureVector;
+    }
 
-    private void update() {
-        doCannyEdgeDetection();
+    private double[][] update() {
+        doCannyEdgeDetection(50,50);
         doDilation();
         drawContours();
         doMasking();
         doClustering();
-        findDominantColor();
-        
+        double[][] res = findDominantColor();
+
         //done
         Image img = HighGui.toBufferedImage(out_2);
-        imgLabel.setIcon(new ImageIcon(img));
-        frame.repaint();
+        if(imgLabel!=null && frame != null){
+            imgLabel.setIcon(new ImageIcon(img));
+            frame.repaint();
+        }
+        return res;
     }
 }

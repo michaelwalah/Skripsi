@@ -3,11 +3,8 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/Campus/Semester%2012/Skripsi/Skripsi%20Sekarang/Program%20Skripsi/Klasifikasi%20Kematangan%20Buah%20Mangga%20Berdasarkan%20Warna/src/Clustering.java</file>
-            <file>file:/D:/Campus/Semester%2012/Skripsi/Skripsi%20Sekarang/Program%20Skripsi/Klasifikasi%20Kematangan%20Buah%20Mangga%20Berdasarkan%20Warna/src/MatToBufImg.java</file>
-            <file>file:/D:/Campus/Semester%2012/Skripsi/Skripsi%20Sekarang/Program%20Skripsi/Klasifikasi%20Kematangan%20Buah%20Mangga%20Berdasarkan%20Warna/src/Main.java</file>
-            <file>file:/D:/Campus/Semester%2012/Skripsi/Skripsi%20Sekarang/Program%20Skripsi/Klasifikasi%20Kematangan%20Buah%20Mangga%20Berdasarkan%20Warna/src/ImagePanel.java</file>
-            <file>file:/D:/Campus/Semester%2012/Skripsi/Skripsi%20Sekarang/Program%20Skripsi/Klasifikasi%20Kematangan%20Buah%20Mangga%20Berdasarkan%20Warna/src/CannyEdgeDetection.java</file>
+            <file>file:/D:/Campus/Semester%2012/Skripsi/Skripsi%20Sekarang/Program%20Skripsi/Klasifikasi%20Kematangan%20Buah%20Mangga%20Berdasarkan%20Warna/src/Algorithm/ImageProcessing.java</file>
+            <file>file:/D:/Campus/Semester%2012/Skripsi/Skripsi%20Sekarang/Program%20Skripsi/Klasifikasi%20Kematangan%20Buah%20Mangga%20Berdasarkan%20Warna/src/Algorithm/Main.java</file>
         </group>
     </open-files>
 </project-private>
