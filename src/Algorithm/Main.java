@@ -22,6 +22,7 @@ import java.util.List;
 //import java.io.File;
 //import java.io.IOException;
 import java.util.Random;
+import java.util.Scanner;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 //import javax.imageio.ImageIO;
@@ -110,7 +111,14 @@ public class Main {
         // load the OpenCV native library
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         //Create Object from Class ImageProcessing
-        ImageProcessing imgProc = new ImageProcessing(10,5,5);
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Threshold : ");
+        int threshold = sc.nextInt();
+        System.out.print("Cluster : ");
+        int cluster = sc.nextInt();
+        System.out.print("Dominant : ");
+        int dominant = sc.nextInt();
+        ImageProcessing imgProc = new ImageProcessing(threshold, cluster, dominant);
 
         System.out.println("Data Train:");
          //Load all train data with its classification (real)
