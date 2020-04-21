@@ -5,7 +5,8 @@
  */
 package GUI;
 
-import Algorithm.CannyEdgeDetection;
+import Algorithm.ImageProcessing;
+import Algorithm.Main;
 import java.io.File;
 import javafx.stage.FileChooser;
 import javax.swing.JFileChooser;
@@ -45,7 +46,7 @@ public class UserInterface extends javax.swing.JFrame {
         currentStatusText = new javax.swing.JLabel();
         predictButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        logText = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -88,9 +89,9 @@ public class UserInterface extends javax.swing.JFrame {
             }
         });
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
+        logText.setColumns(20);
+        logText.setRows(5);
+        jScrollPane1.setViewportView(logText);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -188,7 +189,11 @@ public class UserInterface extends javax.swing.JFrame {
                 javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new CannyEdgeDetection();
+                Main main = new Main();
+                int cluster = Integer.parseInt(clusterField.getText());
+                int dominant = Integer.parseInt(dominantField.getText());
+                int threshold = Integer.parseInt(threshodField.getText());
+                main.runnerForGUI(threshold, cluster, dominant,logText);
             }
         });
     }//GEN-LAST:event_predictButtonActionPerformed
@@ -227,6 +232,7 @@ public class UserInterface extends javax.swing.JFrame {
                 new UserInterface().setVisible(true);
             }
         });
+        
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -240,7 +246,7 @@ public class UserInterface extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextArea logText;
     private javax.swing.JButton predictButton;
     private javax.swing.JTextField threshodField;
     // End of variables declaration//GEN-END:variables
