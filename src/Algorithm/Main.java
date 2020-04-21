@@ -111,6 +111,7 @@ public class Main {
         // load the OpenCV native library
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         //Create Object from Class ImageProcessing
+        // Scanner
         Scanner sc = new Scanner(System.in);
         System.out.print("Threshold : ");
         int threshold = sc.nextInt();
