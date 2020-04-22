@@ -58,18 +58,23 @@ public class UserInterface extends javax.swing.JFrame {
 
         jLabel4.setText("File");
 
-        threshodField.setText("50");
+        threshodField.setText("0");
+        threshodField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                threshodFieldActionPerformed(evt);
+            }
+        });
 
-        clusterField.setText("10");
+        clusterField.setText("0");
         clusterField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 clusterFieldActionPerformed(evt);
             }
         });
 
-        dominantField.setText("10");
+        dominantField.setText("0");
 
-        fileField.setText("path");
+        fileField.setText("Path");
 
         jButton1.setText("Browse");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -172,8 +177,7 @@ public class UserInterface extends javax.swing.JFrame {
     }//GEN-LAST:event_clusterFieldActionPerformed
     String filePath = new String();
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-     JFileChooser fc = new JFileChooser();
-        fc.showOpenDialog(null);
+        JFileChooser fc = new JFileChooser();
         File selectedFile = fc.getSelectedFile();
         if (selectedFile != null) {
             this.filePath = selectedFile.getAbsolutePath();
@@ -185,18 +189,24 @@ public class UserInterface extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void predictButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_predictButtonActionPerformed
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-                javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                Main main = new Main();
-                int cluster = Integer.parseInt(clusterField.getText());
-                int dominant = Integer.parseInt(dominantField.getText());
-                int threshold = Integer.parseInt(threshodField.getText());
-                main.runnerForGUI(threshold, cluster, dominant,logText);
-            }
-        });
+        if (currentStatusText.getText().equals("File berhasil di import")) {
+            System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    Main main = new Main();
+                    int cluster = Integer.parseInt(clusterField.getText());
+                    int dominant = Integer.parseInt(dominantField.getText());
+                    int threshold = Integer.parseInt(threshodField.getText());
+                    main.runnerForGUI(threshold, cluster, dominant, logText);
+                }
+            });
+        }
     }//GEN-LAST:event_predictButtonActionPerformed
+
+    private void threshodFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_threshodFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_threshodFieldActionPerformed
 
     /**
      * @param args the command line arguments
@@ -232,7 +242,7 @@ public class UserInterface extends javax.swing.JFrame {
                 new UserInterface().setVisible(true);
             }
         });
-        
+
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

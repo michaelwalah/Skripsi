@@ -15,30 +15,20 @@ import java.awt.Container;
 import java.awt.Image;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
-import static java.util.stream.Collectors.toMap;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSlider;
 import javax.swing.JTextArea;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -88,13 +78,16 @@ public class ImageProcessing {
     private String path;
     private JTextArea logText;
 
+    private double maxRes; //to contains euclidean result of classification
+    private double[][] vectorTest, vectorTrain; //temporarily contains vector feature of test & train image
+
     public ImageProcessing(int threshold, int cluster, int dominant) {
         dst = new Mat();
         this.cluster = cluster;
         this.dominant = dominant;
         this.threshold = threshold;
     }
-    
+
     public ImageProcessing(int threshold, int cluster, int dominant, JTextArea logText) {
         dst = new Mat();
         this.cluster = cluster;
@@ -224,8 +217,8 @@ public class ImageProcessing {
         Core.kmeans(samples32f, this.cluster, labels, term, 1, Core.KMEANS_PP_CENTERS, centers);
 
         //Print All Centers
-        if(logText!=null){
-            logText.setText(logText.getText()+"\n"+"Centers: " + centers.dump());
+        if (logText != null) {
+            logText.setText(logText.getText() + "\n" + "Centers: " + centers.dump());
         }
         System.out.println("Centers: " + centers.dump());
 
@@ -248,8 +241,8 @@ public class ImageProcessing {
 //        System.out.println(intraTotalValue[0][1]);
 
         System.out.println("Intra Cluster Distance Value");
-        if(logText!=null){
-            logText.setText(logText.getText()+"\n"+"Intra Cluster Distance Value");
+        if (logText != null) {
+            logText.setText(logText.getText() + "\n" + "Intra Cluster Distance Value");
         }
         intraClusterDistanceValue = new double[centers.rows()];
         count_idx = 0;
@@ -263,8 +256,8 @@ public class ImageProcessing {
     public double[][] findDominantColor() {
         Map<Integer, Double> dominantColor = new HashMap<Integer, Double>();
         //Find Dominant Color
-        if(logText!=null){
-            logText.setText(logText.getText()+"\n"+"=============================================="+"\nDominant Colors");
+        if (logText != null) {
+            logText.setText(logText.getText() + "\n" + "==============================================" + "\nDominant Colors");
         }
         System.out.println("==============================================");
         System.out.println("Dominant Colors");
@@ -283,10 +276,10 @@ public class ImageProcessing {
                         Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
         //Print sortedmap
         for (Map.Entry<Integer, Double> en : sorted.entrySet()) {
-            if(logText!=null){
-                logText.setText(logText.getText()+"\n"+"Key (Cluster) = " + en.getKey() + ", Value = " + en.getValue());
+            if (logText != null) {
+                logText.setText(logText.getText() + "\n" + "Key (Cluster) = " + en.getKey() + ", Value = " + en.getValue());
             }
-            System.out.println("Key (Cluster) = " + en.getKey() + ", Value = " + en.getValue());
+//            System.out.println("Key (Cluster) = " + en.getKey() + ", Value = " + en.getValue());
         }
         //Get 5 Dominant Color
         double[][] vector_image = new double[this.dominant][3];
@@ -300,15 +293,15 @@ public class ImageProcessing {
             vector_image[count_idx][2] = (centers.get(en.getKey(), 2))[0];
             count_idx++;
         }
-        if(logText!=null){
-            logText.setText(logText.getText()+"\n"+"==============================================");
+        if (logText != null) {
+            logText.setText(logText.getText() + "\n" + "==============================================");
         }
         System.out.println("==============================================");
         //Debug and Print the 5 Vector Image
         count_idx = 0;
         for (double[] tes : vector_image) {
-            if(logText!=null){
-                logText.setText(logText.getText()+"\n"+"vektor: " + (count_idx + 1) + "\n" + tes[0] + "\n" + tes[1] + "\n" + tes[2] + "\n============================");
+            if (logText != null) {
+                logText.setText(logText.getText() + "\n" + "vektor: " + (count_idx + 1) + "\n" + tes[0] + "\n" + tes[1] + "\n" + tes[2] + "\n============================");
             }
             System.out.println("vektor: " + (count_idx + 1));
             System.out.println(tes[0]);
@@ -318,6 +311,50 @@ public class ImageProcessing {
             count_idx++;
         }
         return vector_image;
+    }
+
+    public void heapPermutation(int a[], int size, int n) {
+        if (size == 1) {
+            //do calculate euclidean
+            double totalRes = 0.0;
+            for (int i = 0; i < a.length; i++) {
+                totalRes += Math.sqrt(Math.pow(vectorTest[i][0] - vectorTrain[a[i]][0], 2)
+                        + Math.pow(vectorTest[i][1] - vectorTrain[a[i]][1], 2)
+                        + Math.pow(vectorTest[i][2] - vectorTrain[a[i]][2], 2));
+            }
+            if (totalRes < maxRes) {
+                maxRes = totalRes;
+            }
+            //System.out.printf("Permutation-%d result: %.3f --- bestRes: %.3f\n",count_idx,totalRes,maxRes);
+            count_idx++;
+        }
+
+        for (int i = 0; i < size; i++) {
+            heapPermutation(a, size - 1, n);
+
+            if (size % 2 == 1) {
+                int temp = a[0];
+                a[0] = a[size - 1];
+                a[size - 1] = temp;
+            } else {
+                int temp = a[i];
+                a[i] = a[size - 1];
+                a[size - 1] = temp;
+            }
+        }
+    }
+
+    public double doClassification(double[][] vectorTest, double[][] vectorTrain) {
+        maxRes = Double.MAX_VALUE;
+        this.vectorTest = vectorTest;
+        this.vectorTrain = vectorTrain;
+        count_idx = 0;
+        int[] index = new int[this.dominant];
+        for (int i = 0; i < index.length; i++) {
+            index[i] = i;
+        }
+        heapPermutation(index, index.length, index.length);
+        return maxRes;
     }
 
     public ArrayList<String> loadDataTraining(File[] list) {
@@ -342,8 +379,8 @@ public class ImageProcessing {
         }
         return alDataTrain;
     }
-    
-    public ArrayList<String> loadDataTest(File[] list){
+
+    public ArrayList<String> loadDataTest(File[] list) {
         ArrayList<String> alDataTest = new ArrayList<>();
         for (File x : list) {
             if (x.isDirectory()) {
@@ -366,8 +403,7 @@ public class ImageProcessing {
         return alDataTest;
     }
 
-    
-    public double[][] extractFeature(String pathTest,int type){
+    public double[][] extractFeature(String pathTest, int type) {
         String imagePath = pathTest;
         src = Imgcodecs.imread(imagePath);
 
@@ -376,7 +412,7 @@ public class ImageProcessing {
             System.exit(0);
         }
         // Create and set up the window.
-        if(type>0){
+        if (type > 0) {
             System.out.println("Data-Test:");
             originalFrame = new JFrame("Original Image");
             frame = new JFrame("Processing Image");
@@ -401,9 +437,9 @@ public class ImageProcessing {
             originalFrame.setVisible(true);
             frame.setVisible(true);
         }
-        
-        double [][] featureVector = update();
-        
+        double[][] featureVector = update();
+
+        //Debug
         //Display Square Color of Centroid (OPTIONAL, Uncommand to See the Result)
 //        for (int i = 0; i < featureVector.length; i++) {
 //            Scalar lab = new Scalar(featureVector[i]);
@@ -444,7 +480,7 @@ public class ImageProcessing {
 
         //done
         Image img = HighGui.toBufferedImage(out_2);
-        if(imgLabel!=null && frame != null){
+        if (imgLabel != null && frame != null) {
             imgLabel.setIcon(new ImageIcon(img));
             frame.repaint();
         }
