@@ -26,7 +26,7 @@ public class Main {
 
     JTextArea logText;
 
-    public void runnerForGUI(int threshold, int cluster, int dominant, JTextArea logText) {
+    public void runnerForGUI(int threshold, int cluster, int dominant, int k, JTextArea logText) {
         logText.setText("Menjalankan Program");
         this.logText = logText;
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -81,7 +81,6 @@ public class Main {
         }
 
         //classification
-        int k = 5;
 
         for (int i = 0; i < dominantColorTest.size(); i++) {
             Map<Integer, Double> classificationRes = new HashMap<>();
@@ -150,6 +149,8 @@ public class Main {
         int cluster = sc.nextInt();
         System.out.print("Dominant : ");
         int dominant = sc.nextInt();
+        System.out.print("K : ");
+        int k = sc.nextInt();
         ImageProcessing imgProc = new ImageProcessing(threshold, cluster, dominant);
 
         System.out.println("Data Train:");
@@ -195,7 +196,6 @@ public class Main {
         }
 
         //classification
-        int k = 5;
 
         for (int i = 0; i < dominantColorTest.size(); i++) {
             Map<Integer, Double> classificationRes = new HashMap<>();
