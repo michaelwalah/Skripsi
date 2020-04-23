@@ -10,39 +10,23 @@ package Algorithm;
  * @author Michael Walah
  * @NPM 2014730019
  */
-import GUI.UserInterface;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Container;
-import java.awt.Image;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
-//import java.io.File;
-//import java.io.IOException;
-import java.util.Random;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Scanner;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-//import javax.imageio.ImageIO;
-//import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import java.util.stream.Collectors;
 import javax.swing.JTextArea;
 //import javax.swing.JLabel;
 import org.opencv.core.*;
-import org.opencv.highgui.HighGui;
-//import org.opencv.highgui.HighGui;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
 
 public class Main {
+
     JTextArea logText;
-    
-    
-    public void runnerForGUI(int threshold, int cluster, int dominant, JTextArea logText){
+
+    public void runnerForGUI(int threshold, int cluster, int dominant, JTextArea logText) {
         logText.setText("Menjalankan Program");
         this.logText = logText;
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -50,10 +34,9 @@ public class Main {
         //Create Object from Class ImageProcessing
         ImageProcessing imgProc = new ImageProcessing(threshold, cluster, dominant, logText);
 
-        
-        logText.setText(logText.getText()+"\n"+"Melakukan Data Train");
+        logText.setText(logText.getText() + "\n" + "Melakukan Data Train");
         System.out.println("Data Train:");
-         //Load all train data with its classification (real)
+        //Load all train data with its classification (real)
         File[] files_train = new File("data-train").listFiles();
         ArrayList<String> allDataTrain = new ArrayList<>();
         allDataTrain = imgProc.loadDataTraining(files_train);
@@ -66,11 +49,10 @@ public class Main {
                 trainData[i][1] = "Mentah";
             }
         }
-        
-        logText.setText(logText.getText()+"\n"+"Data Train Selesai");
-        logText.setText(logText.getText()+"\n"+"Melakukan Data Test");
-        
-        System.out.println("Data Test:");
+
+        logText.setText(logText.getText() + "\n" + "Data Train Selesai");
+        logText.setText(logText.getText() + "\n" + "Melakukan Data Test");
+
         //Load all test data with its classification (real)
         File[] files_test = new File("data-test").listFiles();
         ArrayList<String> allDataTest = new ArrayList<>();
@@ -84,34 +66,83 @@ public class Main {
                 testData[i][1] = "Mentah";
             }
         }
-        
+
         //create array list to store dominant color of all train data and test data
         ArrayList<double[][]> dominantColorTrain = new ArrayList<>();
         ArrayList<double[][]> dominantColorTest = new ArrayList<>();
-        
-        
-        
+
         //extract dominant color from train data
         for (int i = 0; i < trainData.length; i++) {
-            dominantColorTrain.add(imgProc.extractFeature(trainData[i][0],0));
+            dominantColorTrain.add(imgProc.extractFeature(trainData[i][0], 0));
         }
-        
-        
+
         for (int i = 0; i < testData.length; i++) {
-            dominantColorTest.add(imgProc.extractFeature(testData[i][0],1));
+            dominantColorTest.add(imgProc.extractFeature(testData[i][0], 1));
         }
 
         //classification
+        int k = 5;
+
+        for (int i = 0; i < dominantColorTest.size(); i++) {
+            Map<Integer, Double> classificationRes = new HashMap<>();
+            logText.setText(logText.getText() + "\n" + "Classification computation result for test-" + i);
+            System.out.println("Classification computation result for test-" + i);
+            for (int j = 0; j < dominantColorTrain.size(); j++) {
+                double res = imgProc.doClassification(dominantColorTest.get(i), dominantColorTrain.get(j));
+                double res3f = Math.round(res * 1000.0) / 1000.0;
+                logText.setText(logText.getText() + "\n" + "Pair of test-" + i + " with train-" + j + ": " + res3f + " --- train status: " + trainData[j][1]);
+                System.out.printf("Pair of test-%d with train-%d: %.3f --- train status: %s\n", i, j, res, trainData[j][1]);
+                classificationRes.put(j, res);
+            }
+            Map<Integer, Double> sortedRes = classificationRes.entrySet().stream()
+                    .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                    .collect(Collectors.toMap(Map.Entry::getKey,
+                            Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+
+            int limit = 0;
+            System.out.println(sortedRes.size());
+            int matang = 0;
+            int mentah = 0;
+            double totalNilaiMatang = 0.0;
+            double totalNilaiMentah = 0.0;
+            for (Map.Entry<Integer, Double> entry : sortedRes.entrySet()) {
+                if (limit >= sortedRes.size() - k) {
+                    if (trainData[entry.getKey()][1].equalsIgnoreCase("matang")) {
+                        matang++;
+                        totalNilaiMatang += entry.getValue();
+                    } else {
+                        mentah++;
+                        totalNilaiMentah += entry.getValue();
+                    }
+                }
+                limit++;
+            }
+            String[] temp = testData[i][0].split("/");
+            if (matang > mentah) {
+                logText.setText(logText.getText() + "\n" + "Gambar test-" + temp[temp.length - 1] + ": matang");
+                System.out.println("Gambar test-" + temp[temp.length - 1] + ": matang");
+            } else if (matang < mentah) {
+                logText.setText(logText.getText() + "\n" + "Gambar test-" + temp[temp.length - 1] + ": mentah");
+                System.out.println("Gambar test-" + temp[temp.length - 1] + ": mentah");
+            } else {
+                if (totalNilaiMatang > totalNilaiMentah) {
+                    logText.setText(logText.getText() + "\n" + "Gambar test-" + temp[temp.length - 1] + ": matang");
+                    System.out.println("Gambar test-" + temp[temp.length - 1] + ": matang");
+                } else if (totalNilaiMatang < totalNilaiMentah) {
+                    logText.setText(logText.getText() + "\n" + "Gambar test-" + temp[temp.length - 1] + ": mentah");
+                    System.out.println("Gambar test-" + temp[temp.length - 1] + ": mentah");
+                } else {
+                    logText.setText(logText.getText() + "\n" + "Keajaiban terjadi, tidak dapat diputuskan");
+                    System.out.println("Keajaiban terjadi, tidak dapat diputuskan"); //not possible
+                }
+            }
+        }
     }
 
-    //Cek hasil dari canny edge detection, kalau hasilnya adalah matriks dengan nilai dari buah yang telah diambil
-    //gunakan Masking untuk misahin kemudian clustering dengan hasil dari masking tersebut.
-    //!!! Ingat, masking dilakukan apabila warna dari putih pada objek gambar yang diambil atau warna hitam dari objek gambar yang diambil
     public static void main(String[] args) throws Exception {
         // load the OpenCV native library
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         //Create Object from Class ImageProcessing
-        // Scanner
         Scanner sc = new Scanner(System.in);
         System.out.print("Threshold : ");
         int threshold = sc.nextInt();
@@ -122,7 +153,7 @@ public class Main {
         ImageProcessing imgProc = new ImageProcessing(threshold, cluster, dominant);
 
         System.out.println("Data Train:");
-         //Load all train data with its classification (real)
+        //Load all train data with its classification (real)
         File[] files_train = new File("data-train").listFiles();
         ArrayList<String> allDataTrain = new ArrayList<>();
         allDataTrain = imgProc.loadDataTraining(files_train);
@@ -135,8 +166,7 @@ public class Main {
                 trainData[i][1] = "Mentah";
             }
         }
-        
-        System.out.println("Data Test:");
+
         //Load all test data with its classification (real)
         File[] files_test = new File("data-test").listFiles();
         ArrayList<String> allDataTest = new ArrayList<>();
@@ -150,24 +180,68 @@ public class Main {
                 testData[i][1] = "Mentah";
             }
         }
-        
+
         //create array list to store dominant color of all train data and test data
         ArrayList<double[][]> dominantColorTrain = new ArrayList<>();
         ArrayList<double[][]> dominantColorTest = new ArrayList<>();
-        
-        
-        
+
         //extract dominant color from train data
         for (int i = 0; i < trainData.length; i++) {
-            dominantColorTrain.add(imgProc.extractFeature(trainData[i][0],0));
+            dominantColorTrain.add(imgProc.extractFeature(trainData[i][0], 0));
         }
-        
-        
+
         for (int i = 0; i < testData.length; i++) {
-            dominantColorTest.add(imgProc.extractFeature(testData[i][0],1));
+            dominantColorTest.add(imgProc.extractFeature(testData[i][0], 1));
         }
 
         //classification
-        
+        int k = 5;
+
+        for (int i = 0; i < dominantColorTest.size(); i++) {
+            Map<Integer, Double> classificationRes = new HashMap<>();
+            System.out.println("Classification computation result for test-" + i);
+            for (int j = 0; j < dominantColorTrain.size(); j++) {
+                double res = imgProc.doClassification(dominantColorTest.get(i), dominantColorTrain.get(j));
+                System.out.printf("Pair of test-%d with train-%d: %.3f --- train status: %s\n", i, j, res, trainData[j][1]);
+                classificationRes.put(j, res);
+            }
+            Map<Integer, Double> sortedRes = classificationRes.entrySet().stream()
+                    .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                    .collect(Collectors.toMap(Map.Entry::getKey,
+                            Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+
+            int limit = 0;
+            System.out.println(sortedRes.size());
+            int matang = 0;
+            int mentah = 0;
+            double totalNilaiMatang = 0.0;
+            double totalNilaiMentah = 0.0;
+            for (Map.Entry<Integer, Double> entry : sortedRes.entrySet()) {
+                if (limit >= sortedRes.size() - k) {
+                    if (trainData[entry.getKey()][1].equalsIgnoreCase("matang")) {
+                        matang++;
+                        totalNilaiMatang += entry.getValue();
+                    } else {
+                        mentah++;
+                        totalNilaiMentah += entry.getValue();
+                    }
+                }
+                limit++;
+            }
+            String[] temp = testData[i][0].split("/");
+            if (matang > mentah) {
+                System.out.println("Gambar test-" + temp[temp.length - 1] + ": matang");
+            } else if (matang < mentah) {
+                System.out.println("Gambar test-" + temp[temp.length - 1] + ": mentah");
+            } else {
+                if (totalNilaiMatang > totalNilaiMentah) {
+                    System.out.println("Gambar test-" + temp[temp.length - 1] + ": matang");
+                } else if (totalNilaiMatang < totalNilaiMentah) {
+                    System.out.println("Gambar test-" + temp[temp.length - 1] + ": mentah");
+                } else {
+                    System.out.println("Keajaiban terjadi, tidak dapat diputuskan"); //not possible
+                }
+            }
+        }
     }
 }//end class
