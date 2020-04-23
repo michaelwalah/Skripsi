@@ -18,6 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.stream.Collectors;
+import javax.swing.JLabel;
 import javax.swing.JTextArea;
 //import javax.swing.JLabel;
 import org.opencv.core.*;
@@ -26,7 +27,7 @@ public class Main {
 
     JTextArea logText;
 
-    public void runnerForGUI(int threshold, int cluster, int dominant, int k, JTextArea logText) {
+    public void runnerForGUI(int threshold, int cluster, int dominant, int k, JTextArea logText, String path_test, JLabel statusText, String path_train) {
         logText.setText("Menjalankan Program");
         this.logText = logText;
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -35,9 +36,10 @@ public class Main {
         ImageProcessing imgProc = new ImageProcessing(threshold, cluster, dominant, logText);
 
         logText.setText(logText.getText() + "\n" + "Melakukan Data Train");
+        statusText.setText("Training");
         System.out.println("Data Train:");
         //Load all train data with its classification (real)
-        File[] files_train = new File("data-train").listFiles();
+        File[] files_train = new File(path_train).listFiles();
         ArrayList<String> allDataTrain = new ArrayList<>();
         allDataTrain = imgProc.loadDataTraining(files_train);
         String[][] trainData = new String[allDataTrain.size()][2];
@@ -50,11 +52,14 @@ public class Main {
             }
         }
 
+        statusText.setText("Training success");
         logText.setText(logText.getText() + "\n" + "Data Train Selesai");
+        
+        statusText.setText("Testing");
         logText.setText(logText.getText() + "\n" + "Melakukan Data Test");
 
         //Load all test data with its classification (real)
-        File[] files_test = new File("data-test").listFiles();
+        File[] files_test = new File(path_test).listFiles();
         ArrayList<String> allDataTest = new ArrayList<>();
         allDataTest = imgProc.loadDataTest(files_test);
         String[][] testData = new String[allDataTest.size()][2];
@@ -81,7 +86,8 @@ public class Main {
         }
 
         //classification
-
+        
+        statusText.setText("Classification");
         for (int i = 0; i < dominantColorTest.size(); i++) {
             Map<Integer, Double> classificationRes = new HashMap<>();
             logText.setText(logText.getText() + "\n" + "Classification computation result for test-" + i);
@@ -136,6 +142,8 @@ public class Main {
                 }
             }
         }
+        
+        statusText.setText("Done");
     }
 
     public static void main(String[] args) throws Exception {
