@@ -35,7 +35,7 @@ public class UserInterface extends javax.swing.JFrame {
         initComponents();
         setKeyListener();
     }
-
+    
     private void setKeyListener() {
         threshodField.addKeyListener(new KeyAdapter() {
             public void keyReleased(KeyEvent e) {
@@ -58,8 +58,8 @@ public class UserInterface extends javax.swing.JFrame {
             }
         });
     }
-
-    private void checkInput() {
+    
+    private boolean checkInput() {
         try {
             int threshold = Integer.parseInt(threshodField.getText());
             int cluster = Integer.parseInt(clusterField.getText());
@@ -69,14 +69,17 @@ public class UserInterface extends javax.swing.JFrame {
                 String result = "Wrong input. Please inser a number and greater than 0.";
                 currentStatusText.setForeground(Color.RED);
                 currentStatusText.setText(result.toUpperCase());
+                return false;
             }
             String result = "Not found error detected in input.";
             currentStatusText.setForeground(Color.BLACK);
             currentStatusText.setText(result.toUpperCase());
+            return true;
         } catch (Exception e) {
             String result = "Wrong input. Please inser a number and greater than 0.";
             currentStatusText.setForeground(Color.RED);
             currentStatusText.setText(result.toUpperCase());
+            return false;
         }
     }
 
@@ -299,17 +302,17 @@ public class UserInterface extends javax.swing.JFrame {
             public void insertUpdate(DocumentEvent de) {
                 warning();
             }
-
+            
             @Override
             public void removeUpdate(DocumentEvent de) {
                 warning();
             }
-
+            
             @Override
             public void changedUpdate(DocumentEvent de) {
                 warning();
             }
-
+            
             public void warning() {
                 if (Integer.parseInt(clusterField.getText()) <= 0) {
                     JOptionPane.showMessageDialog(null, "Wrong Input Cluster Value", "Error Message", JOptionPane.ERROR_MESSAGE);
@@ -317,7 +320,7 @@ public class UserInterface extends javax.swing.JFrame {
             }
         });
     }//GEN-LAST:event_clusterFieldActionPerformed
-
+    
     String folderTrainPath = new String();
     String folderTestPath = new String();
 
@@ -337,56 +340,25 @@ public class UserInterface extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void predictButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_predictButtonActionPerformed
-
+        
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                Main main = new Main();
-                int threshold = Integer.parseInt(threshodField.getText());
-                int cluster = Integer.parseInt(clusterField.getText());
-                int dominant = Integer.parseInt(dominantField.getText());
-                int k = Integer.parseInt(kField.getText());
-                try {
-                    threshold = Integer.parseInt(threshodField.getText());
-                } catch (Exception e) {
-                    currentStatusText.setText("Wrong Input Canny Edge Detection Threshold Value");
+                boolean status = checkInput();
+                if (status) {
+                    Main main = new Main();
+                    
+                    int threshold = Integer.parseInt(threshodField.getText());
+                    int cluster = Integer.parseInt(clusterField.getText());
+                    int dominant = Integer.parseInt(dominantField.getText());
+                    int k = Integer.parseInt(kField.getText());
+                    
+                    main.runnerForGUI(threshold, cluster, dominant, k, logText1, folderTestPath, currentStatusText, folderTrainPath);
+                } else {
+                    currentStatusText.setText("Please check all input before 'PREDICT'.");
                 }
-                try {
-                    cluster = Integer.parseInt(clusterField.getText());
-                } catch (Exception e) {
-                    currentStatusText.setText("Wrong Input Cluster Value");
-                }
-                try {
-                    dominant = Integer.parseInt(dominantField.getText());
-                } catch (Exception e) {
-                    currentStatusText.setText("Wrong Input Total Dominant Color");
-                }
-                try {
-                    k = Integer.parseInt(kField.getText());
-                } catch (Exception e) {
-                    currentStatusText.setText("Wrong input K-Nearest Neighbor Value");
-                }
-                main.runnerForGUI(threshold, cluster, dominant, k, logText1, folderTestPath, currentStatusText, folderTrainPath);
-//                System.out.println("HERE");
-//                if (threshold > 0) {
-//                    if (cluster > 0) {
-//                        if (dominant > 0) {
-//                            if (k > 0) {
-//                                currentStatusText.setText("Starting ...");
-//                                
-//                            } else {
-//                                currentStatusText.setText("Nearest Neighbor harus bertipe Integer dan memiliki nilai lebih besar dari 0, serta tidak dapat berupa huruf");
-//                            }
-//                        } else {
-//                            currentStatusText.setText("Dominant harus bertipe Integer dan memiliki nilai lebih besar dari 0, serta tidak dapat berupa huruf");
-//                        }
-//                    } else {
-//                        currentStatusText.setText("Cluster harus bertipe Integer dan memiliki nilai lebih besar dari 0, serta tidak dapat berupa huruf");
-//                    }
-//                } else {
-//                    currentStatusText.setText("Threshold harus bertipe Integer dan memiliki nilai lebih besar dari 0, serta tidak dapat berupa huruf");
-//                }
+                
             }
         });
     }//GEN-LAST:event_predictButtonActionPerformed
@@ -399,17 +371,17 @@ public class UserInterface extends javax.swing.JFrame {
             public void insertUpdate(DocumentEvent de) {
                 currentStatusText.setText("INSERT");
             }
-
+            
             @Override
             public void removeUpdate(DocumentEvent de) {
                 currentStatusText.setText("REMOVE");
             }
-
+            
             @Override
             public void changedUpdate(DocumentEvent de) {
                 currentStatusText.setText("CHANGE");
             }
-
+            
             public void warning() {
                 if (Integer.parseInt(threshodField.getText()) < 0) {
                     System.out.println("asd");
@@ -430,17 +402,17 @@ public class UserInterface extends javax.swing.JFrame {
             public void insertUpdate(DocumentEvent de) {
                 warning();
             }
-
+            
             @Override
             public void removeUpdate(DocumentEvent de) {
                 warning();
             }
-
+            
             @Override
             public void changedUpdate(DocumentEvent de) {
                 warning();
             }
-
+            
             public void warning() {
                 if (Integer.parseInt(kField.getText()) <= 0) {
                     JOptionPane.showMessageDialog(null, "Wrong input K-Nearest Neighbor Value", "Error Message", JOptionPane.ERROR_MESSAGE);
@@ -475,17 +447,17 @@ public class UserInterface extends javax.swing.JFrame {
             public void insertUpdate(DocumentEvent de) {
                 warning();
             }
-
+            
             @Override
             public void removeUpdate(DocumentEvent de) {
                 warning();
             }
-
+            
             @Override
             public void changedUpdate(DocumentEvent de) {
                 warning();
             }
-
+            
             public void warning() {
                 if (Integer.parseInt(dominantField.getText()) <= 0) {
                     JOptionPane.showMessageDialog(null, "Wrong Input Total Dominant Color", "Error Message", JOptionPane.ERROR_MESSAGE);
@@ -527,7 +499,7 @@ public class UserInterface extends javax.swing.JFrame {
                 new UserInterface().setVisible(true);
             }
         });
-
+        
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
