@@ -7,14 +7,20 @@ package GUI;
 
 import Algorithm.ImageProcessing;
 import Algorithm.Main;
+import com.sun.javafx.property.adapter.PropertyDescriptor;
 import java.io.File;
 import javafx.stage.FileChooser;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.plaf.basic.BasicButtonListener;
 import org.opencv.core.Core;
 
 /**
  *
- * @author ZerD
+ * @author Michael Walah
+ * @NPM 2014730019
  */
 public class UserInterface extends javax.swing.JFrame {
 
@@ -79,6 +85,11 @@ public class UserInterface extends javax.swing.JFrame {
         });
 
         dominantField.setText("0");
+        dominantField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dominantFieldActionPerformed(evt);
+            }
+        });
 
         folderTrainField.setText("Path");
         folderTrainField.addActionListener(new java.awt.event.ActionListener() {
@@ -111,7 +122,7 @@ public class UserInterface extends javax.swing.JFrame {
         logText1.setRows(5);
         jScrollPane2.setViewportView(logText1);
 
-        jLabel7.setText("K");
+        jLabel7.setText("Nearest Neighbor");
 
         kField.setText("0");
         kField.addActionListener(new java.awt.event.ActionListener() {
@@ -234,9 +245,33 @@ public class UserInterface extends javax.swing.JFrame {
 
     private void clusterFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clusterFieldActionPerformed
         // TODO add your handling code here:
+        clusterField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent de) {
+                warning();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent de) {
+                warning();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent de) {
+                warning();
+            }
+            
+            public void warning(){
+                if (Integer.parseInt(clusterField.getText())<=0) {
+                    JOptionPane.showMessageDialog(null, "Wrong Input Cluster Value", "Error Message", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
     }//GEN-LAST:event_clusterFieldActionPerformed
+    
     String folderTrainPath = new String();
     String folderTestPath = new String();
+    
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         JFileChooser chooser = new JFileChooser();
         chooser.setCurrentDirectory(new java.io.File("."));
@@ -259,36 +294,78 @@ public class UserInterface extends javax.swing.JFrame {
             @Override
             public void run() {
                 Main main = new Main();
+                int threshold = Integer.parseInt(threshodField.getText());
                 int cluster = Integer.parseInt(clusterField.getText());
                 int dominant = Integer.parseInt(dominantField.getText());
-                int threshold = Integer.parseInt(threshodField.getText());
                 int k = Integer.parseInt(kField.getText());
-                System.out.println("HERE");
-                if (cluster > 0) {
-                    if (dominant > 0) {
-                        if (threshold > 0) {
-                            if (k > 0) {
-                                currentStatusText.setText("Starting ...");
-                                main.runnerForGUI(threshold, cluster, dominant, k, logText1, folderTestPath, currentStatusText,folderTrainPath);
-                            } else {
-                                currentStatusText.setText("K must be INT and greated than 0");
-                            }
-                        } else {
-                            currentStatusText.setText("Threshold must be INT and greated than 0");
-                        }
-                    } else {
-                        currentStatusText.setText("Dominant must be INT and greated than 0");
-                    }
-                } else {
-                    currentStatusText.setText("Cluster must be INT and greated than 0");
+                try {
+                     threshold = Integer.parseInt(threshodField.getText());
+                } catch (Exception e) {
+                    currentStatusText.setText("Wrong Input Canny Edge Detection Threshold Value");
                 }
+                try {
+                     cluster = Integer.parseInt(clusterField.getText());
+                } catch (Exception e) {
+                    currentStatusText.setText("Wrong Input Cluster Value");
+                }
+                try {
+                     dominant = Integer.parseInt(dominantField.getText());
+                } catch (Exception e) {
+                    currentStatusText.setText("Wrong Input Total Dominant Color");
+                }
+                try {
+                     k = Integer.parseInt(kField.getText());
+                } catch (Exception e) {
+                    currentStatusText.setText("Wrong input K-Nearest Neighbor Value");
+                }
+                main.runnerForGUI(threshold, cluster, dominant, k, logText1, folderTestPath, currentStatusText, folderTrainPath);
+//                System.out.println("HERE");
+//                if (threshold > 0) {
+//                    if (cluster > 0) {
+//                        if (dominant > 0) {
+//                            if (k > 0) {
+//                                currentStatusText.setText("Starting ...");
+//                                
+//                            } else {
+//                                currentStatusText.setText("Nearest Neighbor harus bertipe Integer dan memiliki nilai lebih besar dari 0, serta tidak dapat berupa huruf");
+//                            }
+//                        } else {
+//                            currentStatusText.setText("Dominant harus bertipe Integer dan memiliki nilai lebih besar dari 0, serta tidak dapat berupa huruf");
+//                        }
+//                    } else {
+//                        currentStatusText.setText("Cluster harus bertipe Integer dan memiliki nilai lebih besar dari 0, serta tidak dapat berupa huruf");
+//                    }
+//                } else {
+//                    currentStatusText.setText("Threshold harus bertipe Integer dan memiliki nilai lebih besar dari 0, serta tidak dapat berupa huruf");
+//                }
             }
         });
-
     }//GEN-LAST:event_predictButtonActionPerformed
 
     private void threshodFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_threshodFieldActionPerformed
         // TODO add your handling code here:
+        threshodField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent de) {
+                warning();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent de) {
+                warning();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent de) {
+                warning();
+            }
+            
+            public void warning(){
+                if (Integer.parseInt(threshodField.getText())<=0) {
+                    JOptionPane.showMessageDialog(null, "Wrong Input Canny Edge Detection Threshold Value", "Error Message", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
     }//GEN-LAST:event_threshodFieldActionPerformed
 
     private void folderTrainFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_folderTrainFieldActionPerformed
@@ -297,6 +374,28 @@ public class UserInterface extends javax.swing.JFrame {
 
     private void kFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_kFieldActionPerformed
         // TODO add your handling code here:
+        kField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent de) {
+                warning();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent de) {
+                warning();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent de) {
+                warning();
+            }
+            
+            public void warning(){
+                if (Integer.parseInt(kField.getText())<=0) {
+                    JOptionPane.showMessageDialog(null, "Wrong input K-Nearest Neighbor Value", "Error Message", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
     }//GEN-LAST:event_kFieldActionPerformed
 
     private void folderTestFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_folderTestFieldActionPerformed
@@ -304,7 +403,7 @@ public class UserInterface extends javax.swing.JFrame {
     }//GEN-LAST:event_folderTestFieldActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-       JFileChooser chooser = new JFileChooser();
+        JFileChooser chooser = new JFileChooser();
         chooser.setCurrentDirectory(new java.io.File("."));
         chooser.setDialogTitle("Choose Folder For Data Test");
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -317,6 +416,32 @@ public class UserInterface extends javax.swing.JFrame {
             currentStatusText.setText("Test folder import : FAIL");
         }
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void dominantFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dominantFieldActionPerformed
+        // TODO add your handling code here:
+        dominantField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent de) {
+                warning();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent de) {
+                warning();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent de) {
+                warning();
+            }
+            
+            public void warning(){
+                if (Integer.parseInt(dominantField.getText())<=0) {
+                    JOptionPane.showMessageDialog(null, "Wrong Input Total Dominant Color", "Error Message", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+    }//GEN-LAST:event_dominantFieldActionPerformed
 
     /**
      * @param args the command line arguments

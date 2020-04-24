@@ -181,6 +181,9 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="0"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="dominantFieldActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JTextField" name="folderTrainField">
       <Properties>
@@ -239,7 +242,7 @@
     </Container>
     <Component class="javax.swing.JLabel" name="jLabel7">
       <Properties>
-        <Property name="text" type="java.lang.String" value="K"/>
+        <Property name="text" type="java.lang.String" value="Nearest Neighbor"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="kField">
