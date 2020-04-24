@@ -75,7 +75,6 @@ public class ImageProcessing {
     private int threshold;
     private int cluster;
     private int dominant;
-    private String path;
     private JTextArea logText;
 
     private double maxRes; //to contains euclidean result of classification

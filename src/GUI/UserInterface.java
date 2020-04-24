@@ -9,13 +9,17 @@ import Algorithm.ImageProcessing;
 import Algorithm.Main;
 import com.sun.javafx.property.adapter.PropertyDescriptor;
 import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.LayoutManager;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import javafx.stage.FileChooser;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JTextField;
+import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.basic.BasicButtonListener;
@@ -27,6 +31,10 @@ import org.opencv.core.Core;
  * @NPM 2014730019
  */
 public class UserInterface extends javax.swing.JFrame {
+    
+    String folderTrainPath = new String();
+    String folderTestPath = new String();
+    String imageTestPath = new String();
 
     /**
      * Creates new form NewJFrame
@@ -35,7 +43,7 @@ public class UserInterface extends javax.swing.JFrame {
         initComponents();
         setKeyListener();
     }
-    
+
     private void setKeyListener() {
         threshodField.addKeyListener(new KeyAdapter() {
             public void keyReleased(KeyEvent e) {
@@ -58,7 +66,7 @@ public class UserInterface extends javax.swing.JFrame {
             }
         });
     }
-    
+
     private boolean checkInput() {
         try {
             int threshold = Integer.parseInt(threshodField.getText());
@@ -111,6 +119,9 @@ public class UserInterface extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         folderTestField = new javax.swing.JTextField();
         jButton2 = new javax.swing.JButton();
+        jLabel8 = new javax.swing.JLabel();
+        imageTestField = new javax.swing.JTextField();
+        jButton3 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -157,7 +168,7 @@ public class UserInterface extends javax.swing.JFrame {
             }
         });
 
-        currentStatusText.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        currentStatusText.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         currentStatusText.setForeground(new java.awt.Color(255, 51, 51));
         currentStatusText.setText("IDLE");
 
@@ -199,6 +210,22 @@ public class UserInterface extends javax.swing.JFrame {
             }
         });
 
+        jLabel8.setText("Image Test");
+
+        imageTestField.setText("Path");
+        imageTestField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                imageTestFieldActionPerformed(evt);
+            }
+        });
+
+        jButton3.setText("Browse");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -217,25 +244,11 @@ public class UserInterface extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(imageTestField)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(currentStatusText, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel4)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(jLabel3)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 107, Short.MAX_VALUE)
-                                    .addComponent(dominantField, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(layout.createSequentialGroup()
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(jLabel2)
-                                        .addComponent(jLabel1))
-                                    .addGap(138, 138, 138)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(threshodField, javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addComponent(clusterField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)))
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(jLabel7)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(kField, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(folderTrainField, javax.swing.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -243,7 +256,29 @@ public class UserInterface extends javax.swing.JFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(folderTestField, javax.swing.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel4)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addComponent(jLabel3)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 107, Short.MAX_VALUE)
+                                            .addComponent(dominantField, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                .addComponent(jLabel2)
+                                                .addComponent(jLabel1))
+                                            .addGap(138, 138, 138)
+                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                .addComponent(threshodField, javax.swing.GroupLayout.Alignment.TRAILING)
+                                                .addComponent(clusterField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)))
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addComponent(jLabel7)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(kField, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addComponent(jLabel8))
+                                .addGap(0, 0, Short.MAX_VALUE)))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -284,6 +319,12 @@ public class UserInterface extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(folderTestField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jButton2))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel8)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(imageTestField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jButton3))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(predictButton, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
@@ -302,17 +343,17 @@ public class UserInterface extends javax.swing.JFrame {
             public void insertUpdate(DocumentEvent de) {
                 warning();
             }
-            
+
             @Override
             public void removeUpdate(DocumentEvent de) {
                 warning();
             }
-            
+
             @Override
             public void changedUpdate(DocumentEvent de) {
                 warning();
             }
-            
+
             public void warning() {
                 if (Integer.parseInt(clusterField.getText()) <= 0) {
                     JOptionPane.showMessageDialog(null, "Wrong Input Cluster Value", "Error Message", JOptionPane.ERROR_MESSAGE);
@@ -320,9 +361,6 @@ public class UserInterface extends javax.swing.JFrame {
             }
         });
     }//GEN-LAST:event_clusterFieldActionPerformed
-    
-    String folderTrainPath = new String();
-    String folderTestPath = new String();
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         JFileChooser chooser = new JFileChooser();
@@ -340,7 +378,7 @@ public class UserInterface extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void predictButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_predictButtonActionPerformed
-        
+
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -348,43 +386,40 @@ public class UserInterface extends javax.swing.JFrame {
                 boolean status = checkInput();
                 if (status) {
                     Main main = new Main();
-                    
+
                     int threshold = Integer.parseInt(threshodField.getText());
                     int cluster = Integer.parseInt(clusterField.getText());
                     int dominant = Integer.parseInt(dominantField.getText());
                     int k = Integer.parseInt(kField.getText());
-                    
+
                     main.runnerForGUI(threshold, cluster, dominant, k, logText1, folderTestPath, currentStatusText, folderTrainPath);
                 } else {
                     currentStatusText.setText("Please check all input before 'PREDICT'.");
                 }
-                
             }
         });
     }//GEN-LAST:event_predictButtonActionPerformed
 
     private void threshodFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_threshodFieldActionPerformed
         // TODO add your handling code here:
-
         threshodField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent de) {
-                currentStatusText.setText("INSERT");
+                warning();
             }
-            
+
             @Override
             public void removeUpdate(DocumentEvent de) {
-                currentStatusText.setText("REMOVE");
+                warning();
             }
-            
+
             @Override
             public void changedUpdate(DocumentEvent de) {
-                currentStatusText.setText("CHANGE");
+                warning();
             }
-            
+
             public void warning() {
-                if (Integer.parseInt(threshodField.getText()) < 0) {
-                    System.out.println("asd");
+                if (Integer.parseInt(threshodField.getText()) <= 0) {
                     JOptionPane.showMessageDialog(null, "Wrong Input Canny Edge Detection Threshold Value", "Error Message", JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -402,17 +437,17 @@ public class UserInterface extends javax.swing.JFrame {
             public void insertUpdate(DocumentEvent de) {
                 warning();
             }
-            
+
             @Override
             public void removeUpdate(DocumentEvent de) {
                 warning();
             }
-            
+
             @Override
             public void changedUpdate(DocumentEvent de) {
                 warning();
             }
-            
+
             public void warning() {
                 if (Integer.parseInt(kField.getText()) <= 0) {
                     JOptionPane.showMessageDialog(null, "Wrong input K-Nearest Neighbor Value", "Error Message", JOptionPane.ERROR_MESSAGE);
@@ -447,17 +482,17 @@ public class UserInterface extends javax.swing.JFrame {
             public void insertUpdate(DocumentEvent de) {
                 warning();
             }
-            
+
             @Override
             public void removeUpdate(DocumentEvent de) {
                 warning();
             }
-            
+
             @Override
             public void changedUpdate(DocumentEvent de) {
                 warning();
             }
-            
+
             public void warning() {
                 if (Integer.parseInt(dominantField.getText()) <= 0) {
                     JOptionPane.showMessageDialog(null, "Wrong Input Total Dominant Color", "Error Message", JOptionPane.ERROR_MESSAGE);
@@ -465,6 +500,26 @@ public class UserInterface extends javax.swing.JFrame {
             }
         });
     }//GEN-LAST:event_dominantFieldActionPerformed
+
+    private void imageTestFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_imageTestFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_imageTestFieldActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        // TODO add your handling code here:
+        JFileChooser chooser = new JFileChooser();
+        chooser.addChoosableFileFilter(new ImageExtension());
+        chooser.setAcceptAllFileFilterUsed(false);
+
+        int option = chooser.showOpenDialog(null);
+        if (option == JFileChooser.APPROVE_OPTION) {
+            this.imageTestPath = chooser.getSelectedFile().getAbsolutePath();
+            this.imageTestField.setText(imageTestPath);
+            currentStatusText.setText("Image test import : SUCCESS");
+        } else {
+            currentStatusText.setText("Image test import : FAIL");
+        }
+    }//GEN-LAST:event_jButton3ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -493,13 +548,14 @@ public class UserInterface extends javax.swing.JFrame {
         }
         //</editor-fold>
         //</editor-fold>
+
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new UserInterface().setVisible(true);
             }
         });
-        
+
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -508,8 +564,10 @@ public class UserInterface extends javax.swing.JFrame {
     private javax.swing.JTextField dominantField;
     private javax.swing.JTextField folderTestField;
     private javax.swing.JTextField folderTrainField;
+    private javax.swing.JTextField imageTestField;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -517,6 +575,7 @@ public class UserInterface extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField kField;
     private javax.swing.JTextArea logText1;
