@@ -10,6 +10,9 @@ package Algorithm;
  * @author Michael Walah
  * @NPM 2014730019
  */
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -18,10 +21,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.stream.Collectors;
+import javax.imageio.ImageIO;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
-//import javax.swing.JLabel;
 import org.opencv.core.*;
+import org.opencv.highgui.HighGui;
+import org.opencv.imgproc.Imgproc;
+import org.opencv.imgcodecs.Imgcodecs;
 
 public class Main {
 
@@ -64,6 +70,7 @@ public class Main {
         for (int i = 0; i < testData.length; i++) {
             testData[i][0] = allDataTest.get(i);
             if (allDataTest.get(i).contains("Matang")) {
+                
                 testData[i][1] = "Matang";
             } else {
                 testData[i][1] = "Mentah";
@@ -84,7 +91,6 @@ public class Main {
         }
 
         //classification
-        
         statusText.setText("Classification");
         for (int i = 0; i < dominantColorTest.size(); i++) {
             Map<Integer, Double> classificationRes = new HashMap<>();
@@ -92,8 +98,8 @@ public class Main {
             System.out.println("Classification computation result for test-" + i);
             for (int j = 0; j < dominantColorTrain.size(); j++) {
                 double res = imgProc.doClassification(dominantColorTest.get(i), dominantColorTrain.get(j));
-                double res3f = Math.round(res * 1000.0) / 1000.0;
-                logText.setText(logText.getText() + "\n" + "Pair of test-" + i + " with train-" + j + ": " + res3f + " --- train status: " + trainData[j][1]);
+//                double res3f = Math.round(res * 1000.0) / 1000.0;
+//                logText.setText(logText.getText() + "\n" + "Pair of test-" + i + " with train-" + j + ": " + res3f + " --- train status: " + trainData[j][1]);
 //                System.out.printf("Pair of test-%d with train-%d: %.3f --- train status: %s\n", i, j, res, trainData[j][1]);
                 classificationRes.put(j, res);
             }
@@ -108,8 +114,11 @@ public class Main {
             int mentah = 0;
             double totalNilaiMatang = 0.0;
             double totalNilaiMentah = 0.0;
+            Mat[] imgCandidate = new Mat[k];
+            int index = 0;
             for (Map.Entry<Integer, Double> entry : sortedRes.entrySet()) {
                 if (limit >= sortedRes.size() - k) {
+                    imgCandidate[index] = Imgcodecs.imread(trainData[entry.getKey()][0]);
                     if (trainData[entry.getKey()][1].equalsIgnoreCase("matang")) {
                         matang++;
                         totalNilaiMatang += entry.getValue();
@@ -117,9 +126,21 @@ public class Main {
                         mentah++;
                         totalNilaiMentah += entry.getValue();
                     }
+                    index++;
                 }
                 limit++;
             }
+            
+            BufferedImage showDataTrainingImage = null;
+            byte[] data = null;
+            for (int j = 0; j < imgCandidate.length; j++) {
+                // buat buffered image, load ke javafx
+                Imgproc.cvtColor(imgCandidate[j], imgCandidate[j], Imgproc.COLOR_Lab2BGR);
+                showDataTrainingImage = new BufferedImage(imgCandidate[j].width(), imgCandidate[j].height(), BufferedImage.TYPE_3BYTE_BGR);
+//                data = ((DataBufferByte) showDataTrainingImage.getRaster().getDataBuffer()).getData();
+//                imgCandidate[j].get(0, 0, data);
+            }
+            
             String[] temp = testData[i][0].split("/");
             if (matang > mentah) {
                 logText.setText(logText.getText() + "\n" + "Gambar test-" + temp[temp.length - 1] + ": matang");
@@ -135,12 +156,11 @@ public class Main {
                     logText.setText(logText.getText() + "\n" + "Gambar test-" + temp[temp.length - 1] + ": mentah");
                     System.out.println("Gambar test-" + temp[temp.length - 1] + ": mentah");
                 } else {
-                    logText.setText(logText.getText() + "\n" + "Keajaiban terjadi, tidak dapat diputuskan");
-                    System.out.println("Keajaiban terjadi, tidak dapat diputuskan"); //not possible
+                    logText.setText(logText.getText() + "\n" + "Can't Classified");
+                    System.out.println("Can't Classified"); //not possible
                 }
             }
         }
-        
         statusText.setText("Done");
     }
 
@@ -149,13 +169,13 @@ public class Main {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         //Create Object from Class ImageProcessing
         Scanner sc = new Scanner(System.in);
-        System.out.print("Masukkan Nilai Threshold: ");
+        System.out.print("Canny Edge Detection Threshold Value: ");
         int threshold = sc.nextInt();
-        System.out.print("Masukkan Jumlah Cluster: ");
+        System.out.print("Total Cluster: ");
         int cluster = sc.nextInt();
-        System.out.print("Masukkan Jumlah Warna Dominan: ");
+        System.out.print("Total Dominant Color: ");
         int dominant = sc.nextInt();
-        System.out.println("Masukkan Jumlah Nearest Neighbor yang Diinginkan: ");
+        System.out.println("Nearest Neighbor Value: ");
         int nearestNeighbor = sc.nextInt();
         ImageProcessing imgProc = new ImageProcessing(threshold, cluster, dominant);
 
@@ -244,7 +264,7 @@ public class Main {
                 } else if (totalNilaiMatang < totalNilaiMentah) {
                     System.out.println("Gambar test-" + temp[temp.length - 1] + ": Mentah");
                 } else {
-                    System.out.println("Tidak Dapat Diklasifikasi"); //not possible
+                    System.out.println("Can't Classified"); //not possible
                 }
             }
         }
