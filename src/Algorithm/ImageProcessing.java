@@ -51,7 +51,7 @@ public class ImageProcessing {
     private int count_idx;
     //Variables for Matrix
     private Mat src; //Matrix for Image Source
-    private Mat detectedEdges = new Mat(); //Matrix for get Edge Detection Value
+    private Mat detectedEdges; //Matrix for get Edge Detection Value
     private Mat dst; //Matrix for Destination Image in Canny Edge Detection
     private Mat drawing; //Matrix for Drawing Contours
     private Mat image_lab; //Matrix for Conversion Color
@@ -70,7 +70,6 @@ public class ImageProcessing {
     private double[] intraClusterDistanceValue; //Contains intra cluster distance value per cluster
     //Variable for Frame and Label
     private JFrame frame;
-    private JFrame originalFrame;
     private JLabel imgLabel;
     private int threshold;
     private int cluster;
@@ -85,6 +84,7 @@ public class ImageProcessing {
         this.cluster = cluster;
         this.dominant = dominant;
         this.threshold = threshold;
+        this.detectedEdges = new Mat();
     }
 
     public ImageProcessing(int threshold, int cluster, int dominant, JTextArea logText) {
@@ -93,17 +93,17 @@ public class ImageProcessing {
         this.dominant = dominant;
         this.threshold = threshold;
         this.logText = logText;
+        this.detectedEdges = new Mat();
     }
 
-    private void addComponentsToPane(Container pane, Image img) {
+    public void addComponentsToPane(Container pane, Image img) {
         if (!(pane.getLayout() instanceof BorderLayout)) {
             pane.add(new JLabel("Container doesn't use BorderLayout!"));
             return;
         }
 
-        JPanel sliderPanel = new JPanel();
-        sliderPanel.setLayout(new BoxLayout(sliderPanel, BoxLayout.PAGE_AXIS));
-
+//        JPanel sliderPanel = new JPanel();
+//        sliderPanel.setLayout(new BoxLayout(sliderPanel, BoxLayout.PAGE_AXIS));
         imgLabel = new JLabel(new ImageIcon(img));
         pane.add(imgLabel, BorderLayout.CENTER);
     }
@@ -115,6 +115,8 @@ public class ImageProcessing {
         Mat greyImage = new Mat();
         Imgproc.cvtColor(src, greyImage, Imgproc.COLOR_BGR2GRAY);//convert gambar ke grayscale
         Imgproc.GaussianBlur(greyImage, srcBlur, BLUR_SIZE, 100);//apply gaussian blur
+//        System.out.println(this.threshold+","+KERNEL_SIZE);
+//        System.out.println(srcBlur.size());
         Imgproc.Canny(srcBlur, detectedEdges, this.threshold, this.threshold, KERNEL_SIZE, false);//apply canny edge detection
     }
 
@@ -217,9 +219,9 @@ public class ImageProcessing {
 
         //Print All Centers
         if (logText != null) {
-            logText.setText(logText.getText() + "\n" + "Centers: " + centers.dump());
+            logText.setText(logText.getText() + "\n" + "Centers: " + "\n" + centers.dump());
         }
-        System.out.println("Centers: " + centers.dump());
+        System.out.println("Centers: " + "\n" + centers.dump());
 
         //Calculate Intra Cluster Distance
         System.out.println("==============================================");
@@ -248,6 +250,9 @@ public class ImageProcessing {
         for (double[] tes : intraTotalValue) {
             intraClusterDistanceValue[count_idx] = tes[0] / tes[1];
             System.out.println(tes[0] / tes[1]);
+            if (logText != null) {
+                logText.setText(logText.getText() + "\n" + (tes[0] / tes[1]));
+            }
             count_idx++;
         }
     }
@@ -256,10 +261,11 @@ public class ImageProcessing {
         Map<Integer, Double> dominantColor = new HashMap<Integer, Double>();
         //Find Dominant Color
         if (logText != null) {
-            logText.setText(logText.getText() + "\n" + "==============================================" + "\nDominant Colors");
+            logText.setText(logText.getText() + "\n" + "==============================================");
+            logText.setText(logText.getText() + "\n" + "Dominant Colors:");
         }
         System.out.println("==============================================");
-        System.out.println("Dominant Colors");
+        System.out.println("Dominant Colors:");
         double intraClusterDistance2 = 0;
         double labClusterValue2 = 0;
         double score = 0;
@@ -278,7 +284,7 @@ public class ImageProcessing {
             if (logText != null) {
                 logText.setText(logText.getText() + "\n" + "Key (Cluster) = " + en.getKey() + ", Value = " + en.getValue());
             }
-//            System.out.println("Key (Cluster) = " + en.getKey() + ", Value = " + en.getValue());
+            System.out.println("Key (Cluster) = " + en.getKey() + ", Value = " + en.getValue());
         }
         //Get 5 Dominant Color
         double[][] vector_image = new double[this.dominant][3];
@@ -292,10 +298,7 @@ public class ImageProcessing {
             vector_image[count_idx][2] = (centers.get(en.getKey(), 2))[0];
             count_idx++;
         }
-        if (logText != null) {
-            logText.setText(logText.getText() + "\n" + "==============================================");
-        }
-        System.out.println("==============================================");
+
         //Debug and Print the 5 Vector Image
         count_idx = 0;
         for (double[] tes : vector_image) {
@@ -312,7 +315,7 @@ public class ImageProcessing {
         return vector_image;
     }
 
-    public void heapPermutation(int a[], int size, int n) {
+    public void doPermutation(int a[], int size, int n) {
         if (size == 1) {
             //do calculate euclidean
             double totalRes = 0.0;
@@ -324,12 +327,13 @@ public class ImageProcessing {
             if (totalRes < maxRes) {
                 maxRes = totalRes;
             }
+            //Uncommand to see the Permutation for each vector in every image
             //System.out.printf("Permutation-%d result: %.3f --- bestRes: %.3f\n",count_idx,totalRes,maxRes);
             count_idx++;
         }
 
         for (int i = 0; i < size; i++) {
-            heapPermutation(a, size - 1, n);
+            doPermutation(a, size - 1, n);
 
             if (size % 2 == 1) {
                 int temp = a[0];
@@ -352,7 +356,7 @@ public class ImageProcessing {
         for (int i = 0; i < index.length; i++) {
             index[i] = i;
         }
-        heapPermutation(index, index.length, index.length);
+        doPermutation(index, index.length, index.length);
         return maxRes;
     }
 
@@ -402,41 +406,46 @@ public class ImageProcessing {
         return alDataTest;
     }
 
-    public double[][] extractFeature(String pathTest, int type) {
+    public double[][] extractFeature(String pathTest, int typeOfFolder, int typeToShowImage) {
         String imagePath = pathTest;
         src = Imgcodecs.imread(imagePath);
-
         if (src.empty()) {
             System.out.println("Empty image: " + imagePath);
             System.exit(0);
         }
         // Create and set up the window.
-        if (type > 0) {
-            System.out.println("Data-Test:");
-            originalFrame = new JFrame("Original Image");
-            frame = new JFrame("Processing Image");
+        if (typeToShowImage > 0) {
+            if (typeOfFolder > 0) {
+                System.out.println("Data Test Result:");
+                frame = new JFrame("Processing Image");
 
-            originalFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            // Set up the content pane.
-            Image img_2 = HighGui.toBufferedImage(src);
-            Image img = HighGui.toBufferedImage(src);
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                // Set up the content pane.
+                Image img = HighGui.toBufferedImage(src);
 
-            addComponentsToPane(originalFrame.getContentPane(), img_2);
-            addComponentsToPane(frame.getContentPane(), img);
-            // Use the content pane's default BorderLayout. No need for
-            // setLayout(new BorderLayout());
-            // Display the window.
-            originalFrame.pack();
-            frame.pack();
-
-            originalFrame.setLocationRelativeTo(null);
-            frame.setLocationRelativeTo(null);
-
-            originalFrame.setVisible(true);
-            frame.setVisible(true);
+                addComponentsToPane(frame.getContentPane(), img);
+                // Use the content pane's default BorderLayout. No need for
+                // setLayout(new BorderLayout());
+                // Display the window.
+                frame.pack();
+                frame.setLocationRelativeTo(null);
+                frame.setVisible(true);
+            }
         }
-        double[][] featureVector = update();
+
+        doCannyEdgeDetection();
+        doDilation();
+        drawContours();
+        doMasking();
+        doClustering();
+        double[][] res = findDominantColor();
+
+        //done
+        Image img = HighGui.toBufferedImage(out_2);
+        if (imgLabel != null && frame != null) {
+            imgLabel.setIcon(new ImageIcon(img));
+            frame.repaint();
+        }
 
         //Debug
         //Display Square Color of Centroid (OPTIONAL, Uncommand to See the Result)
@@ -466,23 +475,6 @@ public class ImageProcessing {
 //            originalFrame.setVisible(true);
 //            
 //        }
-        return featureVector;
-    }
-
-    private double[][] update() {
-        doCannyEdgeDetection();
-        doDilation();
-        drawContours();
-        doMasking();
-        doClustering();
-        double[][] res = findDominantColor();
-
-        //done
-        Image img = HighGui.toBufferedImage(out_2);
-        if (imgLabel != null && frame != null) {
-            imgLabel.setIcon(new ImageIcon(img));
-            frame.repaint();
-        }
         return res;
     }
 }
