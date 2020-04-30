@@ -224,6 +224,9 @@ public class ImageProcessing {
         System.out.println("Centers: " + "\n" + centers.dump());
 
         //Calculate Intra Cluster Distance
+        if (logText != null) {
+            logText.setText(logText.getText() + "\n" + "==============================================");
+        }
         System.out.println("==============================================");
 
         //Get Each L, a, and b Value On One Cluster
