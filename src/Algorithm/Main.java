@@ -45,70 +45,69 @@ public class Main {
 
         //Data needs to be written (Object[])
         Map<String, Object[]> data = new TreeMap<>();
-        data.put("Checker", new Object[]{"File Name", "Folder", "Prediction", "Waktu"});
+        data.put("Checker", new Object[]{"File Name", "Folder", "Prediction", "Time"});
 
-//        //Map data structure to save the value of image name, image folder, and prediction
-//        Map<String, String[]> toExcell = new HashMap<>();
-        //Looping for how many process need to every image test 
-        for (int a = 0; a < loopProgram; a++) {
-            //Record starting time program process
-            long timeStart = System.currentTimeMillis();
-            //Program start running
-            logText.setText("Program Running");
-            System.out.println("Program Running");
-            this.logText = logText;
-            System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        //Record starting time program process
+        long timeStart = 0;
+        
+        //Program start running
+        logText.setText("Program Running");
+        System.out.println("Program Running");
+        this.logText = logText;
+        
+        //Load OpenCV Library
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-            //Create Object from Class ImageProcessing
-            ImageProcessing imgProc = new ImageProcessing(threshold, cluster, dominant, logText);
+        //Create Object from Class ImageProcessing
+        ImageProcessing imgProc = new ImageProcessing(threshold, cluster, dominant, logText);
 
-            logText.setText(logText.getText() + "\n" + "Load Data Train");
-            System.out.println("Load Data Train");
-            //Load all train data with its classification (real)
-            File[] files_train = new File(path_train).listFiles();
-            ArrayList<String> allDataTrain = new ArrayList<>();
-            allDataTrain = imgProc.loadDataTraining(files_train);
-            String[][] trainData = new String[allDataTrain.size()][2];
-            for (int i = 0; i < trainData.length; i++) {
-                trainData[i][0] = allDataTrain.get(i);
-                if (allDataTrain.get(i).contains("ManggaMatang")) {
-                    trainData[i][1] = "Matang";
-                } else {
-                    trainData[i][1] = "Mentah";
-                }
+        logText.setText(logText.getText() + "\n" + "Load Data Train");
+        System.out.println("Load Data Train");
+        //Load all train data with its classification (real)
+        File[] files_train = new File(path_train).listFiles();
+        ArrayList<String> allDataTrain = new ArrayList<>();
+        allDataTrain = imgProc.loadDataTraining(files_train);
+        String[][] trainData = new String[allDataTrain.size()][2];
+        for (int i = 0; i < trainData.length; i++) {
+            trainData[i][0] = allDataTrain.get(i);
+            if (allDataTrain.get(i).contains("ManggaMatang")) {
+                trainData[i][1] = "Matang";
+            } else {
+                trainData[i][1] = "Mentah";
             }
-            statusText.setText("Load Data Training Success");
-            logText.setText(logText.getText() + "\n" + "Load Data Train Done");
-            System.out.println("Load Data Train Done");
+        }
+        statusText.setText("Load Data Training Success");
+        logText.setText(logText.getText() + "\n" + "Load Data Train Done");
+        System.out.println("Load Data Train Done");
 
-            logText.setText(logText.getText() + "\n" + "");
-            System.out.println("");
+        logText.setText(logText.getText() + "\n" + "");
+        System.out.println("");
 
-            logText.setText(logText.getText() + "\n" + "Load Data Test");
-            System.out.println("Load Data Test");
-            //Load all test data with its classification (real)
-            File[] files_test = new File(path_test).listFiles();
-            ArrayList<String> allDataTest = new ArrayList<>();
-            allDataTest = imgProc.loadDataTest(files_test);
-            String[][] testData = new String[allDataTest.size()][2];
-            for (int i = 0; i < testData.length; i++) {
-                testData[i][0] = allDataTest.get(i);
-                if (allDataTest.get(i).contains("Matang")) {
+        logText.setText(logText.getText() + "\n" + "Load Data Test");
+        System.out.println("Load Data Test");
+        //Load all test data with its classification (real)
+        File[] files_test = new File(path_test).listFiles();
+        ArrayList<String> allDataTest = new ArrayList<>();
+        allDataTest = imgProc.loadDataTest(files_test);
+        String[][] testData = new String[allDataTest.size()][2];
+        for (int i = 0; i < testData.length; i++) {
+            testData[i][0] = allDataTest.get(i);
+            if (allDataTest.get(i).contains("Matang")) {
 
-                    testData[i][1] = "Matang";
-                } else {
-                    testData[i][1] = "Mentah";
-                }
+                testData[i][1] = "Matang";
+            } else {
+                testData[i][1] = "Mentah";
             }
-            statusText.setText("Load Data Test Success");
-            logText.setText(logText.getText() + "\n" + "Load Data Test Done");
-            System.out.println("Load Data Test Done");
+        }
+        statusText.setText("Load Data Test Success");
+        logText.setText(logText.getText() + "\n" + "Load Data Test Done");
+        System.out.println("Load Data Test Done");
 
-            //create array list to store dominant color of all train data and test data
-            ArrayList<double[][]> dominantColorTrain = new ArrayList<>();
-            ArrayList<double[][]> dominantColorTest = new ArrayList<>();
+        //create array list to store dominant color of all train data and test data
+        ArrayList<double[][]> dominantColorTrain = new ArrayList<>();
+        ArrayList<double[][]> dominantColorTest = new ArrayList<>();
 
-            //Code to show all image in Data Test Folder
+        //Code to show all image in Data Test Folder
 //        JFrame testDataFrame;
 //        Mat[] imageTest = new Mat[allDataTest.size()];
 //        for (int i = 0; i < testData.length; i++) {
@@ -124,28 +123,37 @@ public class Main {
 //        }
 //        logText.setText(logText.getText() + "\n" + "");
 //        System.out.println("");
-            logText.setText(logText.getText() + "\n" + "Do Processing On Data Train");
-            System.out.println("Do Processing On Data Train");
-            logText.setText(logText.getText() + "\n" + "Data Train Result:");
-            System.out.println("Data Train Result:");
-            //extract dominant color from train data
-            for (int i = 0; i < trainData.length; i++) {
-                dominantColorTrain.add(imgProc.extractFeature(trainData[i][0], 0, 0));
-            }
-            logText.setText(logText.getText() + "\n" + "Processing Data Train Success");
-            statusText.setText("Processing Data Train Success");
-            System.out.println("Processing Data Train Succcess");
 
-            logText.setText(logText.getText() + "\n" + "");
-            System.out.println("");
+        logText.setText(logText.getText() + "\n" + "Do Processing On Data Train");
+        System.out.println("Do Processing On Data Train");
+        logText.setText(logText.getText() + "\n" + "Data Train Result:");
+        System.out.println("Data Train Result:");
+        //extract dominant color from train data
+        for (int i = 0; i < trainData.length; i++) {
+            dominantColorTrain.add(imgProc.extractFeature(trainData[i][0], 0, 0));
+            System.out.println("Feature Extraction From Data Training " + (i + 1) + ", Done");
+        }
+        logText.setText(logText.getText() + "\n" + "Processing Data Train Success");
+        statusText.setText("Processing Data Train Success");
+        System.out.println("Processing Data Train Succcess");
 
+        logText.setText(logText.getText() + "\n" + "");
+        System.out.println("");
+
+        //Looping for every process for every one image test 
+        for (int a = 0; a < loopProgram; a++) {
+            timeStart = System.currentTimeMillis();
+            System.out.println("Prediction Looping: " + (a + 1));
             logText.setText(logText.getText() + "\n" + "Do Processing On Data Test");
             System.out.println("Do Processing On Data Test");
             logText.setText(logText.getText() + "\n" + "Data Test Result:");
             System.out.println("Data Test Result:");
+
             for (int i = 0; i < testData.length; i++) {
                 dominantColorTest.add(imgProc.extractFeature(testData[i][0], 1, 0));
+                System.out.println("Feature Extraction From Data Test " + (i + 1) + ", Done");
             }
+
             logText.setText(logText.getText() + "\n" + "Processing Data Test Success");
             statusText.setText("Processing Data Test Success");
             System.out.println("Processing Data Test Succcess");
@@ -168,13 +176,10 @@ public class Main {
 
             for (int i = 0; i < dominantColorTest.size(); i++) {
                 Map<Integer, Double> classificationRes = new HashMap<>();
-                logText.setText(logText.getText() + "\n" + "Classification computation result for test - " + i);
-                System.out.println("Classification computation result for test - " + i);
+                logText.setText(logText.getText() + "\n" + "Classification Computation Result For Test - " + i);
+                System.out.println("Classification Computation Result For Test - " + i);
                 for (int j = 0; j < dominantColorTrain.size(); j++) {
                     double res = imgProc.doClassification(dominantColorTest.get(i), dominantColorTrain.get(j));
-//                double res3f = Math.round(res * 1000.0) / 1000.0;
-//                logText.setText(logText.getText() + "\n" + "Pair of test-" + i + " with train-" + j + ": " + res3f + " --- train status: " + trainData[j][1]);
-//                System.out.printf("Pair of test-%d with train-%d: %.3f --- train status: %s\n", i, j, res, trainData[j][1]);
                     classificationRes.put(j, res);
                 }
                 Map<Integer, Double> sortedRes = classificationRes.entrySet().stream()
@@ -187,12 +192,13 @@ public class Main {
                 int mentah = 0;
                 double totalNilaiMatang = 0.0;
                 double totalNilaiMentah = 0.0;
-                Mat[] imgCandidateNearestNeighbor = new Mat[k];
+//                Mat[] imgCandidateNearestNeighbor = new Mat[k];
                 int index = 0;
+                System.out.println("Data Statistics " + a + " Image Nearest Neighbor For Data Test " + (i+1));
                 for (Map.Entry<Integer, Double> entry : sortedRes.entrySet()) {
                     if (limit >= sortedRes.size() - k) {
-                        imgCandidateNearestNeighbor[index] = Imgcodecs.imread(trainData[entry.getKey()][0]);//Variable use for take path of the nearest neighbor image
-                        if (trainData[entry.getKey()][1].equalsIgnoreCase("matang")) {
+//                        imgCandidateNearestNeighbor[index] = Imgcodecs.imread(trainData[entry.getKey()][0]);//Variable use for take path of the nearest neighbor image
+                        if (trainData[entry.getKey()][1].equalsIgnoreCase("Matang")) {
                             matang++;
                             totalNilaiMatang += entry.getValue();
                         } else {
@@ -200,13 +206,42 @@ public class Main {
                             totalNilaiMentah += entry.getValue();
                         }
                         index++;
+                        System.out.println(trainData[entry.getKey()][0] + " , " + trainData[entry.getKey()][1] + " , " + entry.getValue());
+//                        XSSFWorkbook workbooks3 = new XSSFWorkbook();
+//                        XSSFSheet sheet3 = workbooks3.createSheet("Statistik data");
+//                        Map<String, Object[]> test2 = new TreeMap<>();
+//                        test2.put("Statistik data ke " + a, new Object[]{trainData[entry.getKey()][0] + " , " + trainData[entry.getKey()][1] + " , " + entry.getValue()});
+//                        Set<String> keysets3 = test2.keySet();
+//                        int rownums3 = 0;
+//                        for (String keys3 : keysets3) {
+//                            Row rows3 = sheet3.createRow(rownums3++);
+//                            Object[] objArrs3 = test2.get(keys3);
+//                            int cellnums3 = 0;
+//                            for (Object objs3 : objArrs3) {
+//                                Cell cells3 = rows3.createCell(cellnums3++);
+//                                if (objs3 instanceof String) {
+//                                    cells3.setCellValue((String) objs3);
+//                                } else if (objs3 instanceof Integer) {
+//                                    cells3.setCellValue((Integer) objs3);
+//                                }
+//                            }
+//                        }
+//                        try {
+//                            //Write the workbook in file system
+//                            FileOutputStream outs3 = new FileOutputStream(new File("Statistik data " + a + " gambar terdekat untuk 5 nearest neighbor data tes ke- " + i + " 1000 centroid loop.xlsx"));
+//                            workbooks3.write(outs3);
+//                            outs3.close();
+//                            System.out.println("Statistik data " + a + " gambar terdekat untuk 5 nearest neighbor data tes ke- " + i + " 1000 centroid loop.xlsx written successfully on disk");
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                        }
                     }
                     limit++;
                 }
 
                 timeEnd = System.currentTimeMillis();
                 timeProgram = timeEnd - timeStart;
-                second = (timeProgram / 1000) % 60;
+                second = timeProgram / 1000;
 
                 String[] imageName = testData[i][0].split("/");
                 if (matang > mentah) {
@@ -223,7 +258,7 @@ public class Main {
                     if (!data.containsKey(imageName[imageName.length - 1])) {
                         data.put(imageName[imageName.length - 1], new Object[]{imageName[imageName.length - 1], imageName[imageName.length - 2], "Mentah", Long.toString(second)});
                     } else {
-                        data.replace(imageName[imageName.length - 1], new Object[]{imageName[imageName.length - 1], imageName[imageName.length - 2], "Matang", Long.toString(second)});
+                        data.replace(imageName[imageName.length - 1], new Object[]{imageName[imageName.length - 1], imageName[imageName.length - 2], "Mentah", Long.toString(second)});
                     }
                 } else {
                     if (totalNilaiMatang > totalNilaiMentah) {
@@ -240,16 +275,17 @@ public class Main {
                         if (!data.containsKey(imageName[imageName.length - 1])) {
                             data.put(imageName[imageName.length - 1], new Object[]{imageName[imageName.length - 1], imageName[imageName.length - 2], "Mentah", Long.toString(second)});
                         } else {
-                            data.replace(imageName[imageName.length - 1], new Object[]{imageName[imageName.length - 1], imageName[imageName.length - 2], "Matang", Long.toString(second)});
+                            data.replace(imageName[imageName.length - 1], new Object[]{imageName[imageName.length - 1], imageName[imageName.length - 2], "Mentah", Long.toString(second)});
                         }
                     } else {
                         logText.setText(logText.getText() + "\n" + "Can't Classified");
                         System.out.println("Can't Classified"); //not possible
                     }
                 }
-                //Code to show 3 Nearest Neighbor Image for Every Image
+
+                //Code to show Nearest Neighbor Image for Every Image
 //            JFrame nearestNeighborFrame;
-//            for (int j = 0; j < 3; j++) {
+//                for (int j = 0; j < k; j++) {
 //                // buat buffered image, load ke javafx
 //                nearestNeighborFrame = new JFrame("Nearest Neighbor Image - " + j + " for: " + imageName[imageName.length - 1]);
 //                nearestNeighborFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -258,7 +294,7 @@ public class Main {
 //                nearestNeighborFrame.pack();
 //                nearestNeighborFrame.setLocationRelativeTo(null);
 //                nearestNeighborFrame.setVisible(true);
-//            }
+//                }
                 logText.setText(logText.getText() + "\n" + "Classification Success");
                 System.out.println("Classification Success");
                 logText.setText(logText.getText() + "\n" + "");
@@ -268,525 +304,267 @@ public class Main {
                 System.out.println("Running Time of Program " + second + " second");
                 logText.setText(logText.getText() + "\n" + "");
                 System.out.println("");
-            }
-        }
 
-        //Iterate over data and write to sheet
-        Set<String> keyset = data.keySet();
-        int rownum = 0;
-        for (String key : keyset) {
-            Row row = sheet.createRow(rownum++);
-            Object[] objArr = data.get(key);
-            int cellnum = 0;
-            for (Object obj : objArr) {
-                Cell cell = row.createCell(cellnum++);
-                if (obj instanceof String) {
-                    cell.setCellValue((String) obj);
-                } else if (obj instanceof Integer) {
-                    cell.setCellValue((Integer) obj);
+                //Iterate over data and write to sheet
+                Set<String> keyset = data.keySet();
+                int rownum = 0;
+                for (String key : keyset) {
+                    Row row = sheet.createRow(rownum++);
+                    Object[] objArr = data.get(key);
+                    int cellnum = 0;
+                    for (Object obj : objArr) {
+                        Cell cell = row.createCell(cellnum++);
+                        if (obj instanceof String) {
+                            cell.setCellValue((String) obj);
+                        } else if (obj instanceof Integer) {
+                            cell.setCellValue((Integer) obj);
+                        }
+                    }
+                }
+                try {
+                    //Write the workbook in file system
+                    FileOutputStream out = new FileOutputStream(new File("Classification Result 70 Image " + a + " Cluster, 100 Centroid Iteration, 5 Nearest Neighbor, Image " + (i+1) + ", Epsilon 1.xlsx"));
+                    workbook.write(out);
+                    out.close();
+                    logText.setText(logText.getText() + "\n" + "Classification Result 70 Image " + a + " Cluster, 100 Centroid Iteration, 5 Nearest Neighbor, Image " + (i+1) + ", Epsilon 1.xlsx Written Successfully on Disk");
+                    System.out.println("Classification Result 70 Image " + a + " Cluster, 100 Centroid Iteration, 5 Nearest Neighbor, Image " + (i+1) + ", Epsilon 1.xlsx Written Successfully on Disk");
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
-        }
-        try {
-            //Write the workbook in file system
-            FileOutputStream out = new FileOutputStream(new File("Classification Result.xlsx"));
-            workbook.write(out);
-            out.close();
-            logText.setText(logText.getText() + "\n" + "Classification Result.xlsx written successfully on disk");
-            System.out.println("Classification Result.xlsx written successfully on disk");
-        } catch (Exception e) {
-            e.printStackTrace();
+
+            imgProc.src.release();
+            imgProc.src = null;
+            imgProc.srcBlur.release();
+            imgProc.srcBlur = null;
+            imgProc.dst.release();
+            imgProc.dst = null;
+            imgProc.detectedEdges.release();
+            imgProc.detectedEdges = null;
+            imgProc.greyImage.release();
+            imgProc.greyImage = null;
+            imgProc.hierarchy.release();
+            imgProc.hierarchy = null;
+            imgProc.mask.release();
+            imgProc.mask = null;
+            imgProc.drawing.release();
+            imgProc.drawing = null;
+            imgProc.image_lab.release();
+            imgProc.image_lab = null;
+            imgProc.out.release();
+            imgProc.out = null;
+            imgProc.out_2.release();
+            imgProc.out_2 = null;
+            imgProc.samples32f.release();
+            imgProc.samples32f = null;
+            imgProc.samples.release();
+            imgProc.samples = null;
+            imgProc.filtered_pixel.release();
+            imgProc.filtered_pixel = null;
+            imgProc.centers.release();
+            imgProc.centers = null;
+            imgProc.labels.release();
+            imgProc.labels = null;
+            System.gc();
+
+            dominantColorTest = new ArrayList<>();
         }
         statusText.setText("Done");
         logText.setText(logText.getText() + "\n" + "");
         System.out.println("");
         logText.setText(logText.getText() + "\n" + "Program Done");
         System.out.println("Program Done");
+        System.exit(0);
     }
 
-    public void runnerForGUIImage(int threshold, int cluster, int dominant, int k, int loopProgram, JTextArea logText, String path_test, JLabel statusText, String path_train) {
-        for (int a = 0; a < loopProgram; a++) {
-            //Program starting time
-            long timeStart = System.currentTimeMillis();
-            logText.setText("Program Running");
-            System.out.println("Program Running");
-            this.logText = logText;
-            System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+    //UI for demo program
+    public void runnerForGUIImage(int threshold, int cluster, int dominant, int k, JTextArea logText, String path_test, JLabel statusText, String path_train) {
+        //Program starting time
+        long timeStart = System.currentTimeMillis();
+        logText.setText("Program Running");
+        System.out.println("Program Running");
+        this.logText = logText;
+        
+        //Load OpenCV Library
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-            //Create Object from Class ImageProcessing
-            ImageProcessing imgProc = new ImageProcessing(threshold, cluster, dominant, logText);
+        //Create Object from Class ImageProcessing
+        ImageProcessing imgProc = new ImageProcessing(threshold, cluster, dominant, logText);
 
-            logText.setText(logText.getText() + "\n" + "Load Data Train");
-            System.out.println("Load Data Train");
-            //Load all train data with its classification (real)
-            File[] files_train = new File(path_train).listFiles();
-            ArrayList<String> allDataTrain = new ArrayList<>();
-            allDataTrain = imgProc.loadDataTraining(files_train);
-            String[][] trainData = new String[allDataTrain.size()][2];
-            for (int i = 0; i < trainData.length; i++) {
-                trainData[i][0] = allDataTrain.get(i);
-                if (allDataTrain.get(i).contains("ManggaMatang")) {
-                    trainData[i][1] = "Matang";
-                } else {
-                    trainData[i][1] = "Mentah";
-                }
+        logText.setText(logText.getText() + "\n" + "Load Data Train");
+        System.out.println("Load Data Train");
+        //Load all train data with its classification (real)
+        File[] files_train = new File(path_train).listFiles();
+        ArrayList<String> allDataTrain = new ArrayList<>();
+        allDataTrain = imgProc.loadDataTraining(files_train);
+        String[][] trainData = new String[allDataTrain.size()][2];
+        for (int i = 0; i < trainData.length; i++) {
+            trainData[i][0] = allDataTrain.get(i);
+            if (allDataTrain.get(i).contains("ManggaMatang")) {
+                trainData[i][1] = "Matang";
+            } else {
+                trainData[i][1] = "Mentah";
             }
-            statusText.setText("Load Data Training Success");
-            logText.setText(logText.getText() + "\n" + "Load Data Train Done");
-            System.out.println("Load Data Train Done");
+        }
+        statusText.setText("Load Data Training Success");
+        logText.setText(logText.getText() + "\n" + "Load Data Train Done");
+        System.out.println("Load Data Train Done");
 
-            logText.setText(logText.getText() + "\n" + "");
-            System.out.println("");
+        logText.setText(logText.getText() + "\n" + "");
+        System.out.println("");
 
-            logText.setText(logText.getText() + "\n" + "Load Data Test");
-            System.out.println("Load Data Test");
-            File files_test = new File(path_test);
-            String imageTest = files_test.getAbsolutePath();
-            System.out.println("Load Data Test Success" + "\n");
-            logText.setText(logText.getText() + "\n" + "Load Data Test Success" + "\n");
+        logText.setText(logText.getText() + "\n" + "Load Data Test");
+        System.out.println("Load Data Test");
+        File files_test = new File(path_test);
+        String imageTest = files_test.getAbsolutePath();
+        System.out.println("Load Data Test Success" + "\n");
+        logText.setText(logText.getText() + "\n" + "Load Data Test Success" + "\n");
 
-            //create array list to store dominant color of all train data and test data
-            ArrayList<double[][]> dominantColorTrain = new ArrayList<>();
-            ArrayList<double[][]> dominantColorTest = new ArrayList<>();
+        //create array list to store dominant color of all train data and test data
+        ArrayList<double[][]> dominantColorTrain = new ArrayList<>();
+        ArrayList<double[][]> dominantColorTest = new ArrayList<>();
 
-            //Code to show all image in Data Test Folder
-            Mat imgTestData = Imgcodecs.imread(imageTest);
-            if (imgTestData.empty()) {
-                System.out.println("Empty image: " + files_test);
-                System.out.println("Can't find path");
-                System.exit(0);
+        //Code to show all image in Data Test Folder
+        Mat imgTestData = Imgcodecs.imread(imageTest);
+        if (imgTestData.empty()) {
+            System.out.println("Empty image: " + files_test);
+            System.out.println("Can't find path");
+            System.exit(0);
+        }
+        JFrame testDataFrame = new JFrame("Original Image");
+        testDataFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        Image originalImage = HighGui.toBufferedImage(imgTestData);
+        imgProc.addComponentsToPane(testDataFrame.getContentPane(), originalImage);
+        testDataFrame.pack();
+        testDataFrame.setLocationRelativeTo(null);
+        testDataFrame.setVisible(true);
+        logText.setText(logText.getText() + "\n" + "");
+        System.out.println("");
+
+        //Image Processing for data train
+        logText.setText(logText.getText() + "\n" + "Do Processing On Data Train");
+        System.out.println("Do Processing On Data Train");
+        logText.setText(logText.getText() + "\n" + "Data Train Result:");
+        System.out.println("Data Train Result:");
+        //extract dominant color from train data
+        for (int i = 0; i < trainData.length; i++) {
+            dominantColorTrain.add(imgProc.extractFeature(trainData[i][0], 0, 0));
+        }
+        logText.setText(logText.getText() + "\n" + "Processing Data Train Success");
+        statusText.setText("Processing Data Train Success");
+        System.out.println("Processing Data Train Succcess");
+
+        logText.setText(logText.getText() + "\n" + "");
+        System.out.println("");
+
+        //Image Processing for data test
+        logText.setText(logText.getText() + "\n" + "Do Processing On Data Test");
+        System.out.println("Do Processing On Data Test");
+        logText.setText(logText.getText() + "\n" + "Data Test Result:");
+        System.out.println("Data Test Result:");
+        dominantColorTest.add(imgProc.extractFeature(imageTest, 1, 1));
+        logText.setText(logText.getText() + "\n" + "Processing Data Test Success");
+        statusText.setText("Processing Data Test Success");
+        System.out.println("Processing Data Test Succcess");
+
+        logText.setText(logText.getText() + "\n" + "");
+        System.out.println("");
+
+        //classification
+        logText.setText(logText.getText() + "\n" + "Do Classification");
+        System.out.println("Do Classification");
+        logText.setText(logText.getText() + "\n" + "Result:");
+        System.out.println("Result:");
+        statusText.setText("Classification");
+        for (int i = 0; i < dominantColorTest.size(); i++) {
+            Map<Integer, Double> classificationRes = new HashMap<>();
+            logText.setText(logText.getText() + "\n" + "Classification computation result for test - " + i);
+            System.out.println("Classification computation result for test - " + i);
+            for (int j = 0; j < dominantColorTrain.size(); j++) {
+                double res = imgProc.doClassification(dominantColorTest.get(i), dominantColorTrain.get(j));
+                classificationRes.put(j, res);
             }
-            JFrame testDataFrame = new JFrame("Original Image");
-            testDataFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            Image originalImage = HighGui.toBufferedImage(imgTestData);
-            imgProc.addComponentsToPane(testDataFrame.getContentPane(), originalImage);
-            testDataFrame.pack();
-            testDataFrame.setLocationRelativeTo(null);
-            testDataFrame.setVisible(true);
-            logText.setText(logText.getText() + "\n" + "");
-            System.out.println("");
-
-            //Image Processing for data train
-            logText.setText(logText.getText() + "\n" + "Do Processing On Data Train");
-            System.out.println("Do Processing On Data Train");
-            logText.setText(logText.getText() + "\n" + "Data Train Result:");
-            System.out.println("Data Train Result:");
-            //extract dominant color from train data
-            for (int i = 0; i < trainData.length; i++) {
-                dominantColorTrain.add(imgProc.extractFeature(trainData[i][0], 0, 0));
-            }
-            logText.setText(logText.getText() + "\n" + "Processing Data Train Success");
-            statusText.setText("Processing Data Train Success");
-            System.out.println("Processing Data Train Succcess");
-
-            logText.setText(logText.getText() + "\n" + "");
-            System.out.println("");
-
-            //Image Processing for data test
-            logText.setText(logText.getText() + "\n" + "Do Processing On Data Test");
-            System.out.println("Do Processing On Data Test");
-            logText.setText(logText.getText() + "\n" + "Data Test Result:");
-            System.out.println("Data Test Result:");
-            dominantColorTest.add(imgProc.extractFeature(imageTest, 1, 1));
-            logText.setText(logText.getText() + "\n" + "Processing Data Test Success");
-            statusText.setText("Processing Data Test Success");
-            System.out.println("Processing Data Test Succcess");
-
-            logText.setText(logText.getText() + "\n" + "");
-            System.out.println("");
-
-            //classification
-            logText.setText(logText.getText() + "\n" + "Do Classification");
-            System.out.println("Do Classification");
-            logText.setText(logText.getText() + "\n" + "Result:");
-            System.out.println("Result:");
-            statusText.setText("Classification");
-            for (int i = 0; i < dominantColorTest.size(); i++) {
-                Map<Integer, Double> classificationRes = new HashMap<>();
-                logText.setText(logText.getText() + "\n" + "Classification computation result for test - " + i);
-                System.out.println("Classification computation result for test - " + i);
-                for (int j = 0; j < dominantColorTrain.size(); j++) {
-                    double res = imgProc.doClassification(dominantColorTest.get(i), dominantColorTrain.get(j));
-//                double res3f = Math.round(res * 1000.0) / 1000.0;
-//                logText.setText(logText.getText() + "\n" + "Pair of test-" + i + " with train-" + j + ": " + res3f + " --- train status: " + trainData[j][1]);
-//                System.out.printf("Pair of test-%d with train-%d: %.3f --- train status: %s\n", i, j, res, trainData[j][1]);
-                    classificationRes.put(j, res);
-                }
-                Map<Integer, Double> sortedRes = classificationRes.entrySet().stream()
-                        .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                        .collect(Collectors.toMap(Map.Entry::getKey,
-                                Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-                int limit = 0;
-                int matang = 0;
-                int mentah = 0;
-                double totalNilaiMatang = 0.0;
-                double totalNilaiMentah = 0.0;
-                Mat[] imgCandidateNearestNeighbor = new Mat[k];
-                int index = 0;
-                for (Map.Entry<Integer, Double> entry : sortedRes.entrySet()) {
-                    if (limit >= sortedRes.size() - k) {
-                        imgCandidateNearestNeighbor[index] = Imgcodecs.imread(trainData[entry.getKey()][0]);//Variable use for take path of the nearest neighbor image
-                        if (trainData[entry.getKey()][1].equalsIgnoreCase("matang")) {
-                            matang++;
-                            totalNilaiMatang += entry.getValue();
-                        } else {
-                            mentah++;
-                            totalNilaiMentah += entry.getValue();
-                        }
-                        index++;
+            Map<Integer, Double> sortedRes = classificationRes.entrySet().stream()
+                    .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                    .collect(Collectors.toMap(Map.Entry::getKey,
+                            Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+            int limit = 0;
+            int matang = 0;
+            int mentah = 0;
+            double totalNilaiMatang = 0.0;
+            double totalNilaiMentah = 0.0;
+            Mat[] imgCandidateNearestNeighbor = new Mat[k];
+            int index = 0;
+            for (Map.Entry<Integer, Double> entry : sortedRes.entrySet()) {
+                if (limit >= sortedRes.size() - k) {
+                    imgCandidateNearestNeighbor[index] = Imgcodecs.imread(trainData[entry.getKey()][0]);//Variable use for take path of the nearest neighbor image
+                    if (trainData[entry.getKey()][1].equalsIgnoreCase("Matang")) {
+                        matang++;
+                        totalNilaiMatang += entry.getValue();
+                    } else {
+                        mentah++;
+                        totalNilaiMentah += entry.getValue();
                     }
-                    limit++;
+                    index++;
                 }
+                limit++;
+            }
 
-                //Show classification result
-                String[] imageName = imageTest.substring(133).split("/");
-                if (matang > mentah) {
+            //Show classification result
+            //substring is use for take the path of the image name,
+            //ex: D:\Campus\Semester 12\Skripsi\Skripsi Sekarang\Program Skripsi\Klasifikasi Kematangan Buah Mangga Berdasarkan Warna\data-test\Matang\mangga-matang-test-1-rotate
+            //it will only be mangga-matang-test-1-rotate
+            String[] imageName = imageTest.substring(133).split("/");
+            if (matang > mentah) {
+                logText.setText(logText.getText() + "\n" + "Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : matang");
+                System.out.println("Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : matang");
+            } else if (matang < mentah) {
+                logText.setText(logText.getText() + "\n" + "Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : mentah");
+                System.out.println("Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : mentah");
+            } else {
+                if (totalNilaiMatang > totalNilaiMentah) {
                     logText.setText(logText.getText() + "\n" + "Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : matang");
                     System.out.println("Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : matang");
-                } else if (matang < mentah) {
+                } else if (totalNilaiMatang < totalNilaiMentah) {
                     logText.setText(logText.getText() + "\n" + "Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : mentah");
                     System.out.println("Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : mentah");
                 } else {
-                    if (totalNilaiMatang > totalNilaiMentah) {
-                        logText.setText(logText.getText() + "\n" + "Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : matang");
-                        System.out.println("Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : matang");
-                    } else if (totalNilaiMatang < totalNilaiMentah) {
-                        logText.setText(logText.getText() + "\n" + "Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : mentah");
-                        System.out.println("Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : mentah");
-                    } else {
-                        logText.setText(logText.getText() + "\n" + "Can't Classified");
-                        System.out.println("Can't Classified"); //not possible
-                    }
+                    logText.setText(logText.getText() + "\n" + "Can't Classified");
+                    System.out.println("Can't Classified"); //not possible
                 }
-
-                //Code to show 3 Nearest Neighbor Image for 1 Image
-                JFrame nearestNeighborFrame;
-                for (int j = 0; j < 3; j++) {
-                    // buat buffered image, load ke javafx
-                    nearestNeighborFrame = new JFrame("Nearest Neighbor Image - " + (j + 1));
-                    nearestNeighborFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                    Image imgNearestNeighbor = HighGui.toBufferedImage(imgCandidateNearestNeighbor[j]);
-                    imgProc.addComponentsToPane(nearestNeighborFrame.getContentPane(), imgNearestNeighbor);
-                    nearestNeighborFrame.pack();
-                    nearestNeighborFrame.setLocationRelativeTo(null);
-                    nearestNeighborFrame.setVisible(true);
-                }
-                
-                logText.setText(logText.getText() + "\n" + "Classification Success");
-                System.out.println("Classification Success");
-                logText.setText(logText.getText() + "\n" + "");
-                System.out.println("");
-                //Program end time
-                long timeEnd = System.currentTimeMillis();
-                long timeProgram = timeEnd - timeStart;
-                //Calculate the program running time
-                long second = (timeProgram / 1000) % 60;
-                //Print the program running time on UI and terminal
-                logText.setText(logText.getText() + "\n" + "Running Time of Program " + second + " second");
-                System.out.println("Running Time of Program " + second + " second");
             }
-            statusText.setText("Done");
-            logText.setText(logText.getText() + "\n" + "Program Done");
-            System.out.println("Program Done");
+
+            //Code to show 3 Nearest Neighbor Image for 1 Image
+            JFrame nearestNeighborFrame;
+            for (int j = 0; j < k; j++) {
+                // buat buffered image, load ke javafx
+                nearestNeighborFrame = new JFrame("Nearest Neighbor Image - " + (j + 1));
+                nearestNeighborFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                Image imgNearestNeighbor = HighGui.toBufferedImage(imgCandidateNearestNeighbor[j]);
+                imgProc.addComponentsToPane(nearestNeighborFrame.getContentPane(), imgNearestNeighbor);
+                nearestNeighborFrame.pack();
+                nearestNeighborFrame.setLocationRelativeTo(null);
+                nearestNeighborFrame.setVisible(true);
+            }
+            
+            logText.setText(logText.getText() + "\n" + "Classification Success");
+            System.out.println("Classification Success");
             logText.setText(logText.getText() + "\n" + "");
             System.out.println("");
+            //Program end time
+            long timeEnd = System.currentTimeMillis();
+            long timeProgram = timeEnd - timeStart;
+            //Calculate the program running time
+            long second = timeProgram / 1000;
+            //Print the program running time on UI and terminal
+            logText.setText(logText.getText() + "\n" + "Running Time of Program " + second + " second");
+            System.out.println("Running Time of Program " + second + " second");
         }
+        statusText.setText("Done");
+        logText.setText(logText.getText() + "\n" + "Program Done");
+        System.out.println("Program Done");
+        logText.setText(logText.getText() + "\n" + "");
+        System.out.println("");
+        System.exit(0);
     }
-
-    //Code To Run On Terminal
-    //----Uncommand To See----
-//    public static void main(String[] args) throws Exception {
-//        // Load the OpenCV Native Library
-//        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-//
-//        System.out.println("Program Running");
-//        //User Input for Image Processing
-//        Scanner sc = new Scanner(System.in);
-//        System.out.print("Canny Edge Detection Threshold Value: ");
-//        int threshold = sc.nextInt();
-//        System.out.print("Total Cluster: ");
-//        int cluster = sc.nextInt();
-//        System.out.print("Total Dominant Color: ");
-//        int dominant = sc.nextInt();
-//        System.out.print("Nearest Neighbor Value: ");
-//        int nearestNeighbor = sc.nextInt();
-//        System.out.println("Choose Type for Folder or File Test");
-//        System.out.println("0 for File Test");
-//        System.out.println("1 for Folder Test");
-//        int mode = sc.nextInt();
-//        System.out.println("");
-//
-//        while (!(mode == 0 || mode == 1)) {
-//            System.out.println("Wrong Mode Input, Input Must 0 or 1");
-//            System.out.print("Input Another Value to Choose: ");
-//            mode = sc.nextInt();
-//        }
-//
-//        System.out.println("Loop For 1 Image Test: ");
-//        int loop = sc.nextInt();
-//        System.out.println("");
-//
-//        for (int a = 0; a < loop; a++) {
-//            //Program running time
-//            long timeStart = System.currentTimeMillis();
-//            
-//            //Create Object from Class ImageProcessing
-//            ImageProcessing imgProc = new ImageProcessing(threshold, cluster, dominant);
-//
-//            System.out.println("Load Data Train");
-//            File[] files_train = new File("data-train").listFiles();
-//            ArrayList<String> allDataTrain = new ArrayList<>();
-//            allDataTrain = imgProc.loadDataTraining(files_train);
-//            String[][] trainData = new String[allDataTrain.size()][2];
-//            for (int i = 0; i < trainData.length; i++) {
-//                trainData[i][0] = allDataTrain.get(i);
-//                if (allDataTrain.get(i).contains("ManggaMatang")) {
-//                    trainData[i][1] = "Matang";
-//                } else {
-//                    trainData[i][1] = "Mentah";
-//                }
-//            }
-//            System.out.println("Load Data Train Success" + "\n");
-//            if (mode == 0) {
-//
-//                //Load Test Data with Its Main (real)
-//                System.out.print("Write the Directory of the Image: ");
-//                String path = sc.next();
-//                System.out.println("");
-//
-//                System.out.println("Load Data Test");
-//                File files_test = new File(path);
-//                String imageTest = files_test.getAbsolutePath();
-//                System.out.println("Load Data Test Success" + "\n");
-//
-//                //Create Array List to Store Dominant Color of All Train Data and Test Data
-//                ArrayList<double[][]> dominantColorTrain = new ArrayList<>();
-//                ArrayList<double[][]> dominantColorTest = new ArrayList<>();
-//
-//                //Code to show all image in Data Test Folder
-//                Mat imgTestData = Imgcodecs.imread(imageTest);
-//                if (imgTestData.empty()) {
-//                    System.out.println("Empty image: " + files_test);
-//                    System.out.println("Can't find path");
-//                    System.exit(0);
-//                }
-//                JFrame testDataFrame = new JFrame("Original Image");
-//                testDataFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//                Image originalImage = HighGui.toBufferedImage(imgTestData);
-//                imgProc.addComponentsToPane(testDataFrame.getContentPane(), originalImage);
-//                testDataFrame.pack();
-//                testDataFrame.setLocationRelativeTo(null);
-//                testDataFrame.setVisible(true);
-//
-//                System.out.println("Do Processing On Data Train");
-//                System.out.println("Data Train Result:");
-//                //Extract Dominant Color from Train Data
-//                for (int i = 0; i < trainData.length; i++) {
-//                    dominantColorTrain.add(imgProc.extractFeature(trainData[i][0], 0, 0));
-//                }
-//                System.out.println("Processing Data Train Success" + "\n");
-//
-//                System.out.println("Do Processing On Data Test");
-//                dominantColorTest.add(imgProc.extractFeature(imageTest, 1, 1));
-//                System.out.println("Processing Data Test Success" + "\n");
-//
-//                //Classification
-//                System.out.println("Do Main");
-//                System.out.println("Result:");
-//                for (int i = 0; i < dominantColorTest.size(); i++) {
-//                    Map<Integer, Double> classificationRes = new HashMap<>();
-//                    System.out.println("Main computation result for test-" + i);
-//                    for (int j = 0; j < dominantColorTrain.size(); j++) {
-//                        double res = imgProc.doClassification(dominantColorTest.get(i), dominantColorTrain.get(j));
-////                System.out.printf("Pair of test-%d with train-%d: %.3f --- train status: %s\n", i, j, res, trainData[j][1]);
-//                        classificationRes.put(j, res);
-//                    }
-//                    Map<Integer, Double> sortedRes = classificationRes.entrySet().stream()
-//                            .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-//                            .collect(Collectors.toMap(Map.Entry::getKey,
-//                                    Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-//
-//                    int limit = 0;
-//                    int matang = 0;
-//                    int mentah = 0;
-//                    double totalNilaiMatang = 0.0;
-//                    double totalNilaiMentah = 0.0;
-//                    Mat[] imgCandidateNearestNeighbor = new Mat[nearestNeighbor];
-//                    int index = 0;
-//                    for (Map.Entry<Integer, Double> entry : sortedRes.entrySet()) {
-//                        if (limit >= sortedRes.size() - nearestNeighbor) {
-//                            //Variable Use to Take Path of the Nearest Neighbor Picture
-//                            imgCandidateNearestNeighbor[index] = Imgcodecs.imread(trainData[entry.getKey()][0]);
-//                            if (trainData[entry.getKey()][1].equalsIgnoreCase("Matang")) {
-//                                matang++;
-//                                totalNilaiMatang += entry.getValue();
-//                            } else {
-//                                mentah++;
-//                                totalNilaiMentah += entry.getValue();
-//                            }
-//                            index++;
-//                        }
-//                        limit++;
-//                    }
-//
-//                    String[] imageName = imageTest.substring(133).split("/");
-//                    if (matang > mentah) {
-//                        System.out.println("Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : Matang");
-//                    } else if (matang < mentah) {
-//                        System.out.println("Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : Mentah");
-//                    } else {
-//                        if (totalNilaiMatang > totalNilaiMentah) {
-//                            System.out.println("Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : Matang");
-//                        } else if (totalNilaiMatang < totalNilaiMentah) {
-//                            System.out.println("Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : Mentah");
-//                        } else {
-//                            System.out.println("Can't Classified"); //not possible
-//                        }
-//                    }
-//
-//                    //Code to show 3 Nearest Neighbor Image for Every Image
-//                    JFrame nearestNeighborFrame;
-//                    for (int j = 0; j < 3; j++) {
-//                        // buat buffered image, load ke javafx
-//                        nearestNeighborFrame = new JFrame("Nearest Neighbor Image - " + (j + 1));
-//                        nearestNeighborFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//                        Image imgNearestNeighbor = HighGui.toBufferedImage(imgCandidateNearestNeighbor[j]);
-//                        imgProc.addComponentsToPane(nearestNeighborFrame.getContentPane(), imgNearestNeighbor);
-//                        nearestNeighborFrame.pack();
-//                        nearestNeighborFrame.setLocationRelativeTo(null);
-//                        nearestNeighborFrame.setVisible(true);
-//                    }
-//                }
-//                System.out.println("Main Success");
-//                long timeEnd = System.currentTimeMillis();
-//                long timeProgram = timeEnd - timeStart;
-//                long second = (timeProgram / 1000) % 60;
-//                System.out.println("Running Time For Program: " + second + " second");
-//                System.out.println("Program Done");
-//            } else if (mode == 1) {
-//                //Load All Test Data with Its Main (real)
-//                System.out.println("Load Data Test");
-//                File[] files_test = new File("data-test").listFiles();
-//                ArrayList<String> allDataTest = new ArrayList<>();
-//                allDataTest = imgProc.loadDataTest(files_test);
-//                String[][] testData = new String[allDataTest.size()][2];
-//                for (int i = 0; i < testData.length; i++) {
-//                    testData[i][0] = allDataTest.get(i);
-//                    if (allDataTest.get(i).contains("Matang")) {
-//                        testData[i][1] = "Matang";
-//                    } else {
-//                        testData[i][1] = "Mentah";
-//                    }
-//                }
-//                System.out.println("Load Data Test Success" + "\n");
-//
-//                //Create Array List to Store Dominant Color of All Train Data and Test Data
-//                ArrayList<double[][]> dominantColorTrain = new ArrayList<>();
-//                ArrayList<double[][]> dominantColorTest = new ArrayList<>();
-//
-//                //Code to show all image in Data Test Folder
-//                //----Uncommand To See----
-////            Mat[] imgTestData = new Mat[allDataTest.size()];
-////            for (int i = 0; i < testData.length; i++) {
-////                String[] imageTestName = testData[i][0].split("/");
-////                imgTestData[i] = Imgcodecs.imread(allDataTest.get(i));
-////                JFrame testDataFrame = new JFrame("Original Image: " + imageTestName[imageTestName.length - 1]);
-////                testDataFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-////                Image originalImage = HighGui.toBufferedImage(imgTestData[i]);
-////                imgProc.addComponentsToPane(testDataFrame.getContentPane(), originalImage);
-////                testDataFrame.pack();
-////                testDataFrame.setLocationRelativeTo(null);
-////                testDataFrame.setVisible(true);
-////            }
-//                System.out.println("Do Processing On Data Train");
-//                System.out.println("Data Train Result:");
-//                //Extract Dominant Color from Train Data
-//                for (int i = 0; i < trainData.length; i++) {
-//                    dominantColorTrain.add(imgProc.extractFeature(trainData[i][0], 0, 0));
-//                }
-//                System.out.println("Processing Data Train Success" + "\n");
-//
-//                System.out.println("Do Processing On Data Test");
-//                for (int i = 0; i < testData.length; i++) {
-//                    dominantColorTest.add(imgProc.extractFeature(testData[i][0], 1, 0));
-//                }
-//                System.out.println("Processing Data Test Success" + "\n");
-//
-//                //Classification
-//                System.out.println("Do Main");
-//                System.out.println("Result:");
-//                for (int i = 0; i < dominantColorTest.size(); i++) {
-//                    Map<Integer, Double> classificationRes = new HashMap<>();
-//                    System.out.println("Main computation result for test-" + i);
-//                    for (int j = 0; j < dominantColorTrain.size(); j++) {
-//                        double res = imgProc.doClassification(dominantColorTest.get(i), dominantColorTrain.get(j));
-////                System.out.printf("Pair of test-%d with train-%d: %.3f --- train status: %s\n", i, j, res, trainData[j][1]);
-//                        classificationRes.put(j, res);
-//                    }
-//                    Map<Integer, Double> sortedRes = classificationRes.entrySet().stream()
-//                            .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-//                            .collect(Collectors.toMap(Map.Entry::getKey,
-//                                    Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-//
-//                    int limit = 0;
-//                    int matang = 0;
-//                    int mentah = 0;
-//                    double totalNilaiMatang = 0.0;
-//                    double totalNilaiMentah = 0.0;
-//                    Mat[] imgCandidateNearestNeighbor = new Mat[nearestNeighbor];
-//                    int index = 0;
-//                    for (Map.Entry<Integer, Double> entry : sortedRes.entrySet()) {
-//                        if (limit >= sortedRes.size() - nearestNeighbor) {
-//                            //Variable Use to Take Path of the Nearest Neighbor Picture
-//                            imgCandidateNearestNeighbor[index] = Imgcodecs.imread(trainData[entry.getKey()][0]);
-//                            if (trainData[entry.getKey()][1].equalsIgnoreCase("Matang")) {
-//                                matang++;
-//                                totalNilaiMatang += entry.getValue();
-//                            } else {
-//                                mentah++;
-//                                totalNilaiMentah += entry.getValue();
-//                            }
-//                            index++;
-//                        }
-//                        limit++;
-//                    }
-//
-//                    String[] imageName = testData[i][0].split("/");
-//                    if (matang > mentah) {
-//                        System.out.println("Image test for " + imageName[imageName.length - 1] + ", " + imageName[imageName.length - 2] + " : Matang");
-//                    } else if (matang < mentah) {
-//                        System.out.println("Image test for " + imageName[imageName.length - 1] + ", " + imageName[imageName.length - 2] + " : Mentah");
-//                    } else {
-//                        if (totalNilaiMatang > totalNilaiMentah) {
-//                            System.out.println("Image test for " + imageName[imageName.length - 1] + ", " + imageName[imageName.length - 2] + " : Matang");
-//                        } else if (totalNilaiMatang < totalNilaiMentah) {
-//                            System.out.println("Image test for " + imageName[imageName.length - 1] + ", " + imageName[imageName.length - 2] + " : Mentah");
-//                        } else {
-//                            System.out.println("Can't Classified"); //not possible
-//                        }
-//                    }
-//
-//                    //Code to show 3 Nearest Neighbor Image for Every Image
-//                    //----Uncommand To See----
-////                JFrame nearestNeighborFrame;
-////                for (int j = 0; j < 3; j++) {
-////                    // buat buffered image, load ke javafx
-////                    nearestNeighborFrame = new JFrame("Nearest Neighbor Image " + j + " for: " + imageName[imageName.length - 1]);
-////                    nearestNeighborFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-////                    Image imgNearestNeighbor = HighGui.toBufferedImage(imgCandidateNearestNeighbor[j]);
-////                    imgProc.addComponentsToPane(nearestNeighborFrame.getContentPane(), imgNearestNeighbor);
-////                    nearestNeighborFrame.pack();
-////                    nearestNeighborFrame.setLocationRelativeTo(null);
-////                    nearestNeighborFrame.setVisible(true);
-////                }
-//                }
-//                System.out.println("Main Success");
-//                long timeEnd = System.currentTimeMillis();
-//                long timeProgram = timeEnd - timeStart;
-//                long second = (timeProgram / 1000) % 60;
-//                System.out.println("Running Time For Program: " + second + " second");
-//                System.out.println("Program Done");
-//            }
-//        }
-//    }
 }//end class

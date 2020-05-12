@@ -10,7 +10,8 @@ import javax.swing.filechooser.FileFilter;
 
 /**
  *
- * @author Michael
+ * @author Michael Walah
+ * @NPM 2014730019
  */
 public class ImageExtension extends FileFilter {
 

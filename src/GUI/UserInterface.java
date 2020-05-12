@@ -77,12 +77,16 @@ public class UserInterface extends javax.swing.JFrame {
             browseFolderTrain.setEnabled(false);
             browseImageTest.setEnabled(false);
             predictButton.setEnabled(false);
+            loopProgramField.setEnabled(false);
+            loopProgramField.setEditable(false);
         }
         if (radioButtonFolder.isSelected()) {
             browseImageTest.setEnabled(false);
             browseFolderTest.setEnabled(true);
             browseFolderTrain.setEnabled(true);
             predictButton.setEnabled(true);
+            loopProgramField.setEnabled(true);
+            loopProgramField.setEditable(true);
         } else if (radioButtonImage.isSelected()) {
             browseFolderTest.setEnabled(false);
             browseFolderTrain.setEnabled(true);
@@ -453,9 +457,8 @@ public class UserInterface extends javax.swing.JFrame {
                         int cluster = Integer.parseInt(clusterField.getText());
                         int dominant = Integer.parseInt(dominantField.getText());
                         int k = Integer.parseInt(kField.getText());
-                        int loopProgram = Integer.parseInt(loopProgramField.getText());
 
-                        main.runnerForGUIImage(threshold, cluster, dominant, k, loopProgram, logText1, imageTestPath, currentStatusText, folderTrainPath);
+                        main.runnerForGUIImage(threshold, cluster, dominant, k, logText1, imageTestPath, currentStatusText, folderTrainPath);
                     } else {
                         currentStatusText.setText("Please check all input before 'PREDICT'");
                     }
@@ -504,6 +507,8 @@ public class UserInterface extends javax.swing.JFrame {
         selectRadioButton();
         radioButtonImage.addActionListener(browseImageTest.getAction());
         radioButtonFolder.addActionListener(browseFolderTrain.getAction());
+        loopProgramField.setEditable(false);
+        loopProgramField.setEnabled(false);
     }//GEN-LAST:event_radioButtonImageActionPerformed
 
     private void radioButtonFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioButtonFolderActionPerformed
