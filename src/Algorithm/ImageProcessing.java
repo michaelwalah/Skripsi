@@ -1,4 +1,4 @@
-package Algorithm;
+package Model;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JTextArea;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -48,22 +47,22 @@ public class ImageProcessing {
     private int largestIndex;
     private int count_idx;
     //Variables for Matrix
-    Mat src; //Matrix for Image Source
-    Mat srcBlur; //Matrix for Blurring Image
-    Mat greyImage; //Matrix for GrayScale Image
-    Mat detectedEdges; //Matrix for get Edge Detection Value
-    Mat dst; //Matrix for Destination Image in Canny Edge Detection
-    Mat hierarchy;
-    Mat drawing; //Matrix for Drawing Contours
-    Mat mask; //Matrix for Image Masking
-    Mat image_lab; //Matrix for Conversion Color
-    Mat filtered_pixel; //Matrix for Filtered Pixel (Choosen Pixel)
-    Mat samples32f;
-    Mat samples; //Matrix Reshape Image to 2D Matrix
-    Mat labels; //Matrix Clustering Labels
-    Mat centers; //Matrix Clustering Centers
-    Mat out; //Matrix Used for Operation AND in Masking
-    Mat out_2; //Matrix Used for Operation XOR in Masking
+    public Mat src; //Matrix for Image Source
+    public Mat srcBlur; //Matrix for Blurring Image
+    public Mat greyImage; //Matrix for GrayScale Image
+    public Mat detectedEdges; //Matrix for get Edge Detection Value
+    public Mat dst; //Matrix for Destination Image in Canny Edge Detection
+    public Mat hierarchy;
+    public Mat drawing; //Matrix for Drawing Contours
+    public Mat mask; //Matrix for Image Masking
+    public Mat image_lab; //Matrix for Conversion Color
+    public Mat filtered_pixel; //Matrix for Filtered Pixel (Choosen Pixel)
+    public Mat samples32f;
+    public Mat samples; //Matrix Reshape Image to 2D Matrix
+    public Mat labels; //Matrix Clustering Labels
+    public Mat centers; //Matrix Clustering Centers
+    public Mat out; //Matrix Used for Operation AND in Masking
+    public Mat out_2; //Matrix Used for Operation XOR in Masking
     //Variable for Scalar
     private Scalar color; //Variable Used for Image Pixel Value
     //Variable for List Contains Matrix of Point
@@ -78,26 +77,14 @@ public class ImageProcessing {
     private int threshold;
     private int cluster;
     private int dominant;
-    private JTextArea logText;
 
     private double maxRes; //Contains Euclidean Result of Classification
     private double[][] vectorTest, vectorTrain; //Temporarily Contains Vector Feature of Test and Train Image
 
     public ImageProcessing(int threshold, int cluster, int dominant) {
-        dst = new Mat();
         this.cluster = cluster;
         this.dominant = dominant;
         this.threshold = threshold;
-        this.detectedEdges = new Mat();
-    }
-
-    public ImageProcessing(int threshold, int cluster, int dominant, JTextArea logText) {
-        dst = new Mat();
-        this.cluster = cluster;
-        this.dominant = dominant;
-        this.threshold = threshold;
-        this.logText = logText;
-        this.detectedEdges = new Mat();
     }
 
     public void addComponentsToPane(Container pane, Image img) {
@@ -110,7 +97,6 @@ public class ImageProcessing {
     }
 
     public void doCannyEdgeDetection() {
-        dst = new Mat(); //Reset Object
         srcBlur = new Mat();
         //Pre Processing
         greyImage = new Mat();
@@ -162,6 +148,7 @@ public class ImageProcessing {
     }
 
     public Mat doMasking() {
+        dst = new Mat(); //Reset Object
         //Create Mask
         double h = drawing.size().height;
         double w = drawing.size().width;
@@ -185,7 +172,7 @@ public class ImageProcessing {
         image_lab = new Mat();
 
         Imgproc.cvtColor(out_2, image_lab, Imgproc.COLOR_BGR2Lab);
-        
+
         //Take pixel with no black color
         List<double[]> temp = new ArrayList<>();
         for (int i = 0; i < image_lab.rows(); i++) {
@@ -208,30 +195,30 @@ public class ImageProcessing {
 
         samples32f = new Mat();
         samples.convertTo(samples32f, CvType.CV_32F);
-        TermCriteria term = new TermCriteria(TermCriteria.COUNT, 100, 1);
+        TermCriteria term = new TermCriteria(TermCriteria.EPS + TermCriteria.MAX_ITER, 100, 0.1);
 
         //Create Matrix to Put Labels
         labels = new Mat();
         //Create Matrix to Put Centers (Centroids)
         centers = new Mat();
         //Running K-Means Clustering Algorithm
-        Core.kmeans(samples32f, this.cluster, labels, term, 1, Core.KMEANS_PP_CENTERS, centers);
+        Core.kmeans(samples32f, this.cluster, labels, term, 10, Core.KMEANS_RANDOM_CENTERS, centers);
 
         //Get Each L, a, and b Value On One Cluster
-        //[x][0] Contains Total 'Euclidean Distance' from All Cluster Member with Centroid, 
+        //x[0][0] Contains Total 'Euclidean Distance' from All Cluster Member with Centroid, 
         //x[0][1] Contains All Cluster Member
         intraTotalValue = new double[centers.rows()][2];
         for (int i = 0; i < samples.rows(); i++) {
             double[] labCenterValueL = centers.get((int) (labels.get(i, 0))[0], 0);
             double[] labCenterValueA = centers.get((int) (labels.get(i, 0))[0], 1);
             double[] labCenterValueB = centers.get((int) (labels.get(i, 0))[0], 2);
-            double distEuclid = Math.sqrt(Math.pow((samples.get(i, 0))[0] - labCenterValueL[0], 2)
-                    + Math.pow((samples.get(i, 1))[0] - labCenterValueA[0], 2)
-                    + Math.pow((samples.get(i, 2))[0] - labCenterValueB[0], 2));
+            double distEuclid = Math.sqrt(Math.pow(labCenterValueL[0] - (samples.get(i, 0))[0], 2)
+                    + Math.pow(labCenterValueA[0] - (samples.get(i, 1))[0], 2)
+                    + Math.pow(labCenterValueB[0] - (samples.get(i, 2))[0], 2));
             intraTotalValue[(int) (labels.get(i, 0))[0]][0] = intraTotalValue[(int) (labels.get(i, 0))[0]][0] + distEuclid;
             intraTotalValue[(int) (labels.get(i, 0))[0]][1] = intraTotalValue[(int) (labels.get(i, 0))[0]][1] + 1;
         }
-        
+
         intraClusterDistanceValue = new double[centers.rows()];
         count_idx = 0;
         for (double[] tes : intraTotalValue) {
@@ -240,24 +227,24 @@ public class ImageProcessing {
         }
     }
 
-    public double[][] findDominantColor() {
+    public double[][] findDominantColor() {//Mengembalikan vector gambar yang terdiri dari [kelompok ke berapa][nilai L, a, b]
         Map<Integer, Double> dominantColor = new HashMap<Integer, Double>();
         double intraClusterDistance2 = 0;
         double labClusterValue2 = 0;
         double score = 0;
         for (int i = 0; i < centers.rows(); i++) { //hitung nilai atau skor setiap cluster seberapa bagus, dengan menghitung nilai intra cluster distance tiap anggota * bobot kontribusi + total anggota suatu cluster * bobot kontribusi 
-            intraClusterDistance2 = Math.pow((1 / intraClusterDistanceValue[i]), 0.3); //total nilai intra cluster seluruh anggota suatu cluster
-            labClusterValue2 = Math.pow((intraTotalValue[i][1] / samples.rows()), 0.7); // jumlah anggota cluster
+            intraClusterDistance2 = (1 / intraClusterDistanceValue[i]) * 0.3; //total nilai intra cluster seluruh anggota cluster
+            labClusterValue2 = (intraTotalValue[i][1] / samples.rows()) * 0.7; // jumlah anggota cluster
             score = intraClusterDistance2 + labClusterValue2;
             dominantColor.put(i, score);
         }
-        
+
         //Sorted All Dominant Color by Value
         Map<Integer, Double> sorted = dominantColor.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .collect(Collectors.toMap(Map.Entry::getKey,
                         Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-        
+
         //Get k Dominant Color
         double[][] vector_image = new double[this.dominant][3];
         count_idx = 0;
@@ -273,7 +260,11 @@ public class ImageProcessing {
         return vector_image;
     }
 
-    public void doPermutation(int a[], int size, int n) {
+    //Cara kerja method ini adalah gambar test 1 memiliki 5 warna dominan [1,2,3,4,5] akan dibandingkan dengan gambar train 1 - 140 dengan 5 warna dominan juga [1,2,3,4,5].
+    //Penggunaan permutasi adalah untuk mengecek apakah vektor warna [1,2,3,4,5] lebih dekat dengan vektor warna [1,2,3,4,5] atau [1,3,5,4,2] atau [2,3,4,5,1] pada gambar train.
+    //Caranya adalah dengan melakukan permutasi untuk vektor warna pada gambar train 1 - 140, kemudian bandingkan jaraknya dengan gambar test. Kalo jaraknya kecil, maka vektor warna
+    //tersebut merupakan tetangga terdekat.
+    public void doFindNearestNeighbor(int a[], int size) {
         if (size == 1) {
             //Calculate Euclidean
             double totalRes = 0.0;
@@ -291,7 +282,7 @@ public class ImageProcessing {
         }
 
         for (int i = 0; i < size; i++) {
-            doPermutation(a, size - 1, n);
+            doFindNearestNeighbor(a, size - 1);
 
             if (size % 2 == 1) {
                 int temp = a[0];
@@ -314,7 +305,7 @@ public class ImageProcessing {
         for (int i = 0; i < index.length; i++) {
             index[i] = i;
         }
-        doPermutation(index, index.length, index.length);
+        doFindNearestNeighbor(index, index.length);
         return maxRes;
     }
 
@@ -322,7 +313,7 @@ public class ImageProcessing {
         ArrayList<String> alDataTrain = new ArrayList<>();
         for (File x : list) {
             if (x.isDirectory()) {
-                if (x.getAbsolutePath().contains("ManggaMatang") || x.getAbsolutePath().contains("ManggaMentah")) {
+                if (x.getAbsolutePath().contains("Matang") || x.getAbsolutePath().contains("Mentah")) {
                     alDataTrain.addAll(loadDataTraining(x.listFiles()));
                 }
             } else {
@@ -363,8 +354,8 @@ public class ImageProcessing {
         }
         return alDataTest;
     }
-    
-    public double[][] extractFeature(String pathTest, int typeOfFolder, int typeToShowImage) {
+
+    public double[][] extractFeature(String pathTest, int type) {
         String imagePath = pathTest;
         src = Imgcodecs.imread(imagePath);
         if (src.empty()) {
@@ -372,23 +363,21 @@ public class ImageProcessing {
             System.exit(0);
         }
         // Create and set up the window.
-        if (typeToShowImage > 0) {
-            if (typeOfFolder > 0) {
-                System.out.println("Data Test Result:");
-                frame = new JFrame("Processing Image");
+        if (type > 0) {
+            System.out.println("Data Test Result:");
+            frame = new JFrame("Processing Image");
 
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                // Set up the content pane.
-                Image img = HighGui.toBufferedImage(src);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            // Set up the content pane.
+            Image img = HighGui.toBufferedImage(src);
 
-                addComponentsToPane(frame.getContentPane(), img);
-                // Use the content pane's default BorderLayout. No need for
-                // setLayout(new BorderLayout());
-                // Display the window.
-                frame.pack();
-                frame.setLocationRelativeTo(null);
-                frame.setVisible(true);
-            }
+            addComponentsToPane(frame.getContentPane(), img);
+            // Use the content pane's default BorderLayout. No need for
+            // setLayout(new BorderLayout());
+            // Display the window.
+            frame.pack();
+            frame.setLocationRelativeTo(null);
+            frame.setVisible(true);
         }
 
         doCannyEdgeDetection();
@@ -404,7 +393,7 @@ public class ImageProcessing {
             imgLabel.setIcon(new ImageIcon(img));
             frame.repaint();
         }
-        
+
         //Debug
         //Display Square Color of Centroid (OPTIONAL, Uncommand to See the Result)
 //      for (int i = 0; i < res.length; i++) {

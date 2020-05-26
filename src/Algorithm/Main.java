@@ -1,4 +1,4 @@
-package Algorithm;
+package Controller;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -10,6 +10,7 @@ package Algorithm;
  * @author Michael Walah
  * @NPM 2014730019
  */
+import Model.ImageProcessing;
 import java.awt.Image;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,9 +33,9 @@ import org.opencv.core.*;
 import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 
-public class Main {
+public class Controller {
 
-    JTextArea logText;
+    private JTextArea logText;
 
     public void runnerForGUIFolder(int threshold, int cluster, int dominant, int k, int loopProgram, JTextArea logText, String path_test, JLabel statusText, String path_train) {
         //Create blank workbook
@@ -47,19 +48,16 @@ public class Main {
         Map<String, Object[]> data = new TreeMap<>();
         data.put("Checker", new Object[]{"File Name", "Folder", "Prediction", "Time"});
 
-        //Record starting time program process
-        long timeStart = 0;
-        
         //Program start running
         logText.setText("Program Running");
         System.out.println("Program Running");
         this.logText = logText;
-        
+
         //Load OpenCV Library
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         //Create Object from Class ImageProcessing
-        ImageProcessing imgProc = new ImageProcessing(threshold, cluster, dominant, logText);
+        ImageProcessing imgProc = new ImageProcessing(threshold, cluster, dominant);
 
         logText.setText(logText.getText() + "\n" + "Load Data Train");
         System.out.println("Load Data Train");
@@ -70,7 +68,7 @@ public class Main {
         String[][] trainData = new String[allDataTrain.size()][2];
         for (int i = 0; i < trainData.length; i++) {
             trainData[i][0] = allDataTrain.get(i);
-            if (allDataTrain.get(i).contains("ManggaMatang")) {
+            if (allDataTrain.get(i).contains("Matang")) {
                 trainData[i][1] = "Matang";
             } else {
                 trainData[i][1] = "Mentah";
@@ -123,15 +121,15 @@ public class Main {
 //        }
 //        logText.setText(logText.getText() + "\n" + "");
 //        System.out.println("");
-
         logText.setText(logText.getText() + "\n" + "Do Processing On Data Train");
         System.out.println("Do Processing On Data Train");
         logText.setText(logText.getText() + "\n" + "Data Train Result:");
         System.out.println("Data Train Result:");
         //extract dominant color from train data
         for (int i = 0; i < trainData.length; i++) {
-            dominantColorTrain.add(imgProc.extractFeature(trainData[i][0], 0, 0));
-            System.out.println("Feature Extraction From Data Training " + (i + 1) + ", Done");
+            dominantColorTrain.add(imgProc.extractFeature(trainData[i][0], 0));
+            logText.setText(logText.getText() + "\n" + "Feature Extraction From Data Train " + (i + 1) + ", Done");
+            System.out.println("Feature Extraction From Data Train " + (i + 1) + ", Done");
         }
         logText.setText(logText.getText() + "\n" + "Processing Data Train Success");
         statusText.setText("Processing Data Train Success");
@@ -140,9 +138,13 @@ public class Main {
         logText.setText(logText.getText() + "\n" + "");
         System.out.println("");
 
+        //Record starting time program process
+        long timeStart = 0;
+
         //Looping for every process for every one image test 
         for (int a = 0; a < loopProgram; a++) {
             timeStart = System.currentTimeMillis();
+
             System.out.println("Prediction Looping: " + (a + 1));
             logText.setText(logText.getText() + "\n" + "Do Processing On Data Test");
             System.out.println("Do Processing On Data Test");
@@ -150,7 +152,8 @@ public class Main {
             System.out.println("Data Test Result:");
 
             for (int i = 0; i < testData.length; i++) {
-                dominantColorTest.add(imgProc.extractFeature(testData[i][0], 1, 0));
+                dominantColorTest.add(imgProc.extractFeature(testData[i][0], 0));
+                logText.setText(logText.getText() + "\n" + "Feature Extraction From Data Test " + (i + 1) + ", Done");
                 System.out.println("Feature Extraction From Data Test " + (i + 1) + ", Done");
             }
 
@@ -176,8 +179,8 @@ public class Main {
 
             for (int i = 0; i < dominantColorTest.size(); i++) {
                 Map<Integer, Double> classificationRes = new HashMap<>();
-                logText.setText(logText.getText() + "\n" + "Classification Computation Result For Test - " + i);
-                System.out.println("Classification Computation Result For Test - " + i);
+                logText.setText(logText.getText() + "\n" + "Classification Computation Result For Test - " + (i + 1));
+                System.out.println("Classification Computation Result For Test - " + (i + 1));
                 for (int j = 0; j < dominantColorTrain.size(); j++) {
                     double res = imgProc.doClassification(dominantColorTest.get(i), dominantColorTrain.get(j));
                     classificationRes.put(j, res);
@@ -192,12 +195,9 @@ public class Main {
                 int mentah = 0;
                 double totalNilaiMatang = 0.0;
                 double totalNilaiMentah = 0.0;
-//                Mat[] imgCandidateNearestNeighbor = new Mat[k];
                 int index = 0;
-                System.out.println("Data Statistics " + a + " Image Nearest Neighbor For Data Test " + (i+1));
                 for (Map.Entry<Integer, Double> entry : sortedRes.entrySet()) {
                     if (limit >= sortedRes.size() - k) {
-//                        imgCandidateNearestNeighbor[index] = Imgcodecs.imread(trainData[entry.getKey()][0]);//Variable use for take path of the nearest neighbor image
                         if (trainData[entry.getKey()][1].equalsIgnoreCase("Matang")) {
                             matang++;
                             totalNilaiMatang += entry.getValue();
@@ -206,35 +206,6 @@ public class Main {
                             totalNilaiMentah += entry.getValue();
                         }
                         index++;
-                        System.out.println(trainData[entry.getKey()][0] + " , " + trainData[entry.getKey()][1] + " , " + entry.getValue());
-//                        XSSFWorkbook workbooks3 = new XSSFWorkbook();
-//                        XSSFSheet sheet3 = workbooks3.createSheet("Statistik data");
-//                        Map<String, Object[]> test2 = new TreeMap<>();
-//                        test2.put("Statistik data ke " + a, new Object[]{trainData[entry.getKey()][0] + " , " + trainData[entry.getKey()][1] + " , " + entry.getValue()});
-//                        Set<String> keysets3 = test2.keySet();
-//                        int rownums3 = 0;
-//                        for (String keys3 : keysets3) {
-//                            Row rows3 = sheet3.createRow(rownums3++);
-//                            Object[] objArrs3 = test2.get(keys3);
-//                            int cellnums3 = 0;
-//                            for (Object objs3 : objArrs3) {
-//                                Cell cells3 = rows3.createCell(cellnums3++);
-//                                if (objs3 instanceof String) {
-//                                    cells3.setCellValue((String) objs3);
-//                                } else if (objs3 instanceof Integer) {
-//                                    cells3.setCellValue((Integer) objs3);
-//                                }
-//                            }
-//                        }
-//                        try {
-//                            //Write the workbook in file system
-//                            FileOutputStream outs3 = new FileOutputStream(new File("Statistik data " + a + " gambar terdekat untuk 5 nearest neighbor data tes ke- " + i + " 1000 centroid loop.xlsx"));
-//                            workbooks3.write(outs3);
-//                            outs3.close();
-//                            System.out.println("Statistik data " + a + " gambar terdekat untuk 5 nearest neighbor data tes ke- " + i + " 1000 centroid loop.xlsx written successfully on disk");
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                        }
                     }
                     limit++;
                 }
@@ -283,18 +254,6 @@ public class Main {
                     }
                 }
 
-                //Code to show Nearest Neighbor Image for Every Image
-//            JFrame nearestNeighborFrame;
-//                for (int j = 0; j < k; j++) {
-//                // buat buffered image, load ke javafx
-//                nearestNeighborFrame = new JFrame("Nearest Neighbor Image - " + j + " for: " + imageName[imageName.length - 1]);
-//                nearestNeighborFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//                Image imgNearestNeighbor = HighGui.toBufferedImage(imgCandidateNearestNeighbor[j]);
-//                imgProc.addComponentsToPane(nearestNeighborFrame.getContentPane(), imgNearestNeighbor);
-//                nearestNeighborFrame.pack();
-//                nearestNeighborFrame.setLocationRelativeTo(null);
-//                nearestNeighborFrame.setVisible(true);
-//                }
                 logText.setText(logText.getText() + "\n" + "Classification Success");
                 System.out.println("Classification Success");
                 logText.setText(logText.getText() + "\n" + "");
@@ -304,33 +263,33 @@ public class Main {
                 System.out.println("Running Time of Program " + second + " second");
                 logText.setText(logText.getText() + "\n" + "");
                 System.out.println("");
+            }
 
-                //Iterate over data and write to sheet
-                Set<String> keyset = data.keySet();
-                int rownum = 0;
-                for (String key : keyset) {
-                    Row row = sheet.createRow(rownum++);
-                    Object[] objArr = data.get(key);
-                    int cellnum = 0;
-                    for (Object obj : objArr) {
-                        Cell cell = row.createCell(cellnum++);
-                        if (obj instanceof String) {
-                            cell.setCellValue((String) obj);
-                        } else if (obj instanceof Integer) {
-                            cell.setCellValue((Integer) obj);
-                        }
+            //Iterate over data and write to sheet
+            Set<String> keyset = data.keySet();
+            int rownum = 0;
+            for (String key : keyset) {
+                Row row = sheet.createRow(rownum++);
+                Object[] objArr = data.get(key);
+                int cellnum = 0;
+                for (Object obj : objArr) {
+                    Cell cell = row.createCell(cellnum++);
+                    if (obj instanceof String) {
+                        cell.setCellValue((String) obj);
+                    } else if (obj instanceof Integer) {
+                        cell.setCellValue((Integer) obj);
                     }
                 }
-                try {
-                    //Write the workbook in file system
-                    FileOutputStream out = new FileOutputStream(new File("Classification Result 70 Image " + a + " Cluster, 100 Centroid Iteration, 5 Nearest Neighbor, Image " + (i+1) + ", Epsilon 1.xlsx"));
-                    workbook.write(out);
-                    out.close();
-                    logText.setText(logText.getText() + "\n" + "Classification Result 70 Image " + a + " Cluster, 100 Centroid Iteration, 5 Nearest Neighbor, Image " + (i+1) + ", Epsilon 1.xlsx Written Successfully on Disk");
-                    System.out.println("Classification Result 70 Image " + a + " Cluster, 100 Centroid Iteration, 5 Nearest Neighbor, Image " + (i+1) + ", Epsilon 1.xlsx Written Successfully on Disk");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            }
+            try {
+                //Write the workbook in file system
+                FileOutputStream out = new FileOutputStream(new File("Classification Result " + a + ".xlsx"));
+                workbook.write(out);
+                out.close();
+                logText.setText(logText.getText() + "\n" + "Classification Result " + a + ".xlsx Written Successfully on Disk");
+                System.out.println("Classification Result " + a + ".xlsx Written Successfully on Disk");
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
             imgProc.src.release();
@@ -374,7 +333,6 @@ public class Main {
         System.out.println("");
         logText.setText(logText.getText() + "\n" + "Program Done");
         System.out.println("Program Done");
-        System.exit(0);
     }
 
     //UI for demo program
@@ -384,12 +342,12 @@ public class Main {
         logText.setText("Program Running");
         System.out.println("Program Running");
         this.logText = logText;
-        
+
         //Load OpenCV Library
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         //Create Object from Class ImageProcessing
-        ImageProcessing imgProc = new ImageProcessing(threshold, cluster, dominant, logText);
+        ImageProcessing imgProc = new ImageProcessing(threshold, cluster, dominant);
 
         logText.setText(logText.getText() + "\n" + "Load Data Train");
         System.out.println("Load Data Train");
@@ -400,7 +358,7 @@ public class Main {
         String[][] trainData = new String[allDataTrain.size()][2];
         for (int i = 0; i < trainData.length; i++) {
             trainData[i][0] = allDataTrain.get(i);
-            if (allDataTrain.get(i).contains("ManggaMatang")) {
+            if (allDataTrain.get(i).contains("Matang")) {
                 trainData[i][1] = "Matang";
             } else {
                 trainData[i][1] = "Mentah";
@@ -448,7 +406,7 @@ public class Main {
         System.out.println("Data Train Result:");
         //extract dominant color from train data
         for (int i = 0; i < trainData.length; i++) {
-            dominantColorTrain.add(imgProc.extractFeature(trainData[i][0], 0, 0));
+            dominantColorTrain.add(imgProc.extractFeature(trainData[i][0], 0));
         }
         logText.setText(logText.getText() + "\n" + "Processing Data Train Success");
         statusText.setText("Processing Data Train Success");
@@ -462,7 +420,7 @@ public class Main {
         System.out.println("Do Processing On Data Test");
         logText.setText(logText.getText() + "\n" + "Data Test Result:");
         System.out.println("Data Test Result:");
-        dominantColorTest.add(imgProc.extractFeature(imageTest, 1, 1));
+        dominantColorTest.add(imgProc.extractFeature(imageTest, 1));
         logText.setText(logText.getText() + "\n" + "Processing Data Test Success");
         statusText.setText("Processing Data Test Success");
         System.out.println("Processing Data Test Succcess");
@@ -514,20 +472,20 @@ public class Main {
             //substring is use for take the path of the image name,
             //ex: D:\Campus\Semester 12\Skripsi\Skripsi Sekarang\Program Skripsi\Klasifikasi Kematangan Buah Mangga Berdasarkan Warna\data-test\Matang\mangga-matang-test-1-rotate
             //it will only be mangga-matang-test-1-rotate
-            String[] imageName = imageTest.substring(133).split("/");
+            String[] imageName = imageTest.split("/");
             if (matang > mentah) {
-                logText.setText(logText.getText() + "\n" + "Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : matang");
-                System.out.println("Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : matang");
+                logText.setText(logText.getText() + "\n" + "Image test for " + imageName[0].substring(133) + ", " + "Folder: " + imageName[0].substring(126, 132) + " : matang");
+                System.out.println("Image test for " + imageName[0].substring(133) + ", " + "Folder: " + imageName[0].substring(126, 132) + " : matang");
             } else if (matang < mentah) {
-                logText.setText(logText.getText() + "\n" + "Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : mentah");
-                System.out.println("Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : mentah");
+                logText.setText(logText.getText() + "\n" + "Image test for " + imageName[0].substring(133) + ", " + "Folder: " + imageName[0].substring(126, 132) + " : mentah");
+                System.out.println("Image test for " + imageName[0].substring(133) + ", " + "Folder: " + imageName[0].substring(126, 132) + " : mentah");
             } else {
                 if (totalNilaiMatang > totalNilaiMentah) {
-                    logText.setText(logText.getText() + "\n" + "Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : matang");
-                    System.out.println("Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : matang");
+                    logText.setText(logText.getText() + "\n" + "Image test for " + imageName[0].substring(133) + ", " + "Folder: " + imageName[0].substring(126, 132) + " : matang");
+                    System.out.println("Image test for " + imageName[0].substring(133) + ", " + "Folder: " + imageName[0].substring(126, 132) + " : matang");
                 } else if (totalNilaiMatang < totalNilaiMentah) {
-                    logText.setText(logText.getText() + "\n" + "Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : mentah");
-                    System.out.println("Image test for " + imageName[imageName.length - 1] + ", " + imageTest.substring(126, 132) + " : mentah");
+                    logText.setText(logText.getText() + "\n" + "Image test for " + imageName[0].substring(133) + ", " + "Folder: " + imageName[0].substring(126, 132) + " : mentah");
+                    System.out.println("Image test for " + imageName[0].substring(133) + ", " + "Folder: " + imageName[0].substring(126, 132) + " : mentah");
                 } else {
                     logText.setText(logText.getText() + "\n" + "Can't Classified");
                     System.out.println("Can't Classified"); //not possible
@@ -546,7 +504,7 @@ public class Main {
                 nearestNeighborFrame.setLocationRelativeTo(null);
                 nearestNeighborFrame.setVisible(true);
             }
-            
+
             logText.setText(logText.getText() + "\n" + "Classification Success");
             System.out.println("Classification Success");
             logText.setText(logText.getText() + "\n" + "");
@@ -565,6 +523,5 @@ public class Main {
         System.out.println("Program Done");
         logText.setText(logText.getText() + "\n" + "");
         System.out.println("");
-        System.exit(0);
     }
 }//end class
